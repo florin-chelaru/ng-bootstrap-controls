@@ -23,22 +23,7 @@
   <script src="main-controller.js"></script>
   <script src="test.js"></script>
 </head>
-<body ng-app="ngb.test.App">
-  <div ng-controller="ngb.test.MainController as main">
-    <div class="ngb-main-controller">
-      <div class="ngb-multiselect-list"
-           ngb-multiselect-list
-           ngb-items="main.countries"
-           ngb-load-more="main.loadMore()"
-           ngb-filter="main.filter"
-           ngb-selection="main.selection"
-           ngb-select-all="main.selectAll()"></div>
-    </div>
-    <div>
-      <pre>
-        {{ main.selectionStr }}
-      </pre>
-    </div>
-  </div>
+<body ng-app="ngb.test.App" ng-include="'_test-body.html'">
+
 </body>
 </html>

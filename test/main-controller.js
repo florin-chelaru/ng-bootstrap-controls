@@ -64,7 +64,7 @@ ngb.test.MainController = function ($scope) {
   this._pageSize = 5;
 
   /**
-   * @type {Array.<string>}
+   * @type {Array.<{index:number, label:string}>}
    * @private
    */
   this._countries = this._allCountries.slice(0, this._pageSize);
@@ -76,13 +76,25 @@ ngb.test.MainController = function ($scope) {
   this._pageIndex = 0;
 
   /**
-   * @type {Object.<number, boolean>}
+   * @type {Object.<number, {index: number, label: string}>}
    * @private
    */
   this._selection = {};
+
+  /**
+   * @type {string}
+   * @private
+   */
+  this._title = 'Countries';
 };
 
 goog.inherits(ngb.test.MainController, ngu.Controller);
+
+/**
+ * @type {Array.<{index: number, label: string}>}
+ * @name ngb.test.MainController#countries
+ */
+ngb.test.MainController.prototype.countries;
 
 /**
  * @type {string}
@@ -95,6 +107,18 @@ ngb.test.MainController.prototype.filter;
  * @name ngb.test.MainController#selection
  */
 ngb.test.MainController.prototype.selection;
+
+/**
+ * @type {string}
+ * @name ngb.test.MainController#selectionStr
+ */
+ngb.test.MainController.prototype.selectionStr;
+
+/**
+ * @type {string>}
+ * @name ngb.test.MainController#title
+ */
+ngb.test.MainController.prototype.title;
 
 Object.defineProperties(ngb.test.MainController.prototype, {
   'countries': {
@@ -121,6 +145,14 @@ Object.defineProperties(ngb.test.MainController.prototype, {
   'selectionStr': {
     get: /** @type {function (this:ngb.test.MainController)} */ (function () {
       return JSON.stringify(this._selection);
+    })
+  },
+  'title': {
+    get: /** @type {function (this:ngb.test.MainController)} */ (function () {
+      return this._title;
+    }),
+    set: /** @type {function (this:ngb.test.MainController)} */ (function (value) {
+      this._title = value;
     })
   }
 });

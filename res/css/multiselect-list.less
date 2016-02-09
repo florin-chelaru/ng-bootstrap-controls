@@ -12,6 +12,10 @@
 
     overflow-y: auto;
     max-height: ~'calc(100% - @{input-height-base})';
+
+    &.ngb-has-title {
+      max-height: ~'calc(100% - @{input-height-base} - @{navbar-height})';
+    }
   }
 
   .ngb-list-search {
@@ -30,5 +34,9 @@
 
   .list-group-item:last-child {
     border-radius: 0;
+  }
+
+  .navbar {
+    margin-bottom: 0;
   }
 }

@@ -8,6 +8,9 @@
   overflow-y: auto;
   max-height: calc(100% - 34px);
 }
+.ngb-multiselect-list > .list-group.ngb-has-title {
+  max-height: calc(100% - 34px - 50px);
+}
 .ngb-multiselect-list .ngb-list-search > .input-group > .form-control:first-child {
   border-radius: 0;
 }
@@ -19,4 +22,7 @@
 }
 .ngb-multiselect-list .list-group-item:last-child {
   border-radius: 0;
+}
+.ngb-multiselect-list .navbar {
+  margin-bottom: 0;
 }

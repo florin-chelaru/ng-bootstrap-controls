@@ -99,6 +99,11 @@ Object.defineProperty(ngb.d.MultiselectList, 'options', {
     var self = this;
     return {
       'template':
+        '<div class="nav navbar navbar-default" ng-if="ngbTitle">' +
+          '<div class="navbar-header">' +
+            '<div class="navbar-brand"><a href="#" style="cursor: move;">{{ ngbTitle }}</a></div>' +
+          '</div>' +
+        '</div>' +
         '<form class="ngb-list-search" role="search">' +
           '<div class="input-group">' +
             '<input type="text" class="form-control" placeholder="Search" ng-model="ngbFilter">' +
@@ -112,10 +117,11 @@ Object.defineProperty(ngb.d.MultiselectList, 'options', {
             '</div>' +
           '</div>' +
         '</form>' +
-        '<div class="list-group list">' +
+        '<div class="list-group list" ng-class="{\'ngb-has-title\': !!ngbTitle}">' +
           '<a ng-repeat="item in ngbItems | filter:ngbFilter" href="#" class="list-group-item" ng-class="{\'active\': ngbMultiselectList.isSelected(item)}" ng-click="ngbMultiselectList.select(item)" >{{ item.label }}</a>' +
         '</div>',
       'scope': {
+        'ngbTitle': '=',
         'ngbItems': '=',
         'ngbFilter': '=',
         'ngbSelection': '=',
