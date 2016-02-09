@@ -11,10 +11,24 @@
     margin: 0;
 
     overflow-y: auto;
-    max-height: ~'calc(100% - 2 * @{input-height-base})';
+    max-height: ~'calc(100% - @{input-height-base})';
   }
 
-  .btn {
-    width: 50%;
+  .ngb-list-search {
+    & > .input-group > .form-control:first-child {
+      border-radius: 0;
+    }
+
+    .input-group-btn > .btn:last-child {
+      border-radius: 0;
+    }
+  }
+
+  .list-group-item:first-child {
+    border-radius: 0;
+  }
+
+  .list-group-item:last-child {
+    border-radius: 0;
   }
 }

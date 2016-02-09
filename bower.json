@@ -21,6 +21,7 @@
   "dependencies": {
     "angular": "1.4.4",
     "bootstrap": "3.3.6",
+    "components-font-awesome": "4.5.0",
 
     "utils.js": "git://github.com/florin-chelaru/utils.js.git",
     "ng-utils": "git://github.com/florin-chelaru/ng-utils.git"
