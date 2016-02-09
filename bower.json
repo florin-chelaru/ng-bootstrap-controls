@@ -1,0 +1,34 @@
+{
+  "name": "ng-bootstrap-controls",
+  "version": "1.0.0",
+  "authors": [
+    "Florin Chelaru <florinc@mit.edu>"
+  ],
+  "description": "Angular Bootstrap Controls",
+  "main": "ngb.js",
+  "moduleType": [
+    "globals"
+  ],
+  "keywords": [],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular": "1.4.4",
+    "bootstrap": "3.3.6",
+
+    "utils.js": "git://github.com/florin-chelaru/utils.js.git",
+    "ng-utils": "git://github.com/florin-chelaru/ng-utils.git"
+  },
+
+  "devDependencies": {
+    "google-closure-library": "git://github.com/google/closure-library.git#56712dfced32778fc8435a4bea6a2e422e5f03c1",
+    "closure-compiler": "0.2.7",
+    "qunit": "1.19.0"
+  }
+}

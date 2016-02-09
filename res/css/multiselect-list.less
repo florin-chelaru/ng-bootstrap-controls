@@ -1,0 +1,20 @@
+@import (reference,less) "../../bower_components/bootstrap/less/variables.less";
+
+@search-size: @input-height-base;
+
+.ngb-multiselect-list {
+  width: 100%;
+  height: 100%;
+  position: relative;
+
+  & > .list-group {
+    margin: 0;
+
+    overflow-y: auto;
+    max-height: ~'calc(100% - 2 * @{input-height-base})';
+  }
+
+  .btn {
+    width: 50%;
+  }
+}

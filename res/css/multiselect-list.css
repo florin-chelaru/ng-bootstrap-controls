@@ -1,0 +1,13 @@
+.ngb-multiselect-list {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+.ngb-multiselect-list > .list-group {
+  margin: 0;
+  overflow-y: auto;
+  max-height: calc(100% - 2 * 34px);
+}
+.ngb-multiselect-list .btn {
+  width: 50%;
+}
