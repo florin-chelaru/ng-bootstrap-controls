@@ -87,7 +87,7 @@ Object.defineProperty(ngb.d.MultiselectList, 'options', {
       'template':
         '<div class="nav navbar navbar-default" ng-if="ngbTitle">' +
           '<div class="navbar-header">' +
-            '<div class="navbar-brand"><a href="#" style="cursor: move;">{{ ngbTitle }}</a></div>' +
+            '<div class="navbar-brand">{{ ngbTitle }}</div>' +
           '</div>' +
         '</div>' +
         '<form class="ngb-list-search" role="search">' +
