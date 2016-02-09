@@ -92,14 +92,14 @@ Object.defineProperty(ngb.d.MultiselectList, 'options', {
               '<button type="button" class="btn btn-default" aria-label="Select all" ng-click="ngbSelectAll()">' +
                 '<span class="fa fa-check-square"></span>' +
               '</button>' +
-              '<button type="button" class="btn btn-default" aria-label="Clear selection" ng-click="ngbMultiselectList.handler.clearSelection()">' +
+              '<button type="button" class="btn btn-default" aria-label="Clear selection" ng-click="ngbMultiselectList.clearSelection()">' +
                 '<span class="fa fa-square-o"></span>' +
               '</button>' +
             '</div>' +
           '</div>' +
         '</form>' +
         '<div class="list-group list">' +
-          '<a ng-repeat="item in ngbItems | filter:ngbFilter" href="#" class="list-group-item" ng-class="{\'active\': ngbMultiselectList.handler.isSelected(item)}" ng-click="ngbMultiselectList.handler.select(item)" >{{ item.label }}</a>' +
+          '<a ng-repeat="item in ngbItems | filter:ngbFilter" href="#" class="list-group-item" ng-class="{\'active\': ngbMultiselectList.isSelected(item)}" ng-click="ngbMultiselectList.select(item)" >{{ item.label }}</a>' +
         '</div>',
       'scope': {
         'ngbItems': '=',

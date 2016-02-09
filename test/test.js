@@ -11,5 +11,5 @@ goog.require('ngb.test.MainController');
 ngb.test.App = angular.module('ngb.test.App', ['ngb']);
 
 ngb.test.App.controller('ngb.test.MainController', ['$scope', function() {
-  this['controller'] = u.reflection.applyConstructor(ngb.test.MainController, arguments);
+  return u.reflection.applyConstructor(ngb.test.MainController, arguments);
 }]);

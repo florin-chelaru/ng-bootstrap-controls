@@ -27,33 +27,17 @@
     <div class="ngb-main-controller">
       <div class="ngb-multiselect-list"
            ngb-multiselect-list
-           ngb-items="main.controller.countries"
-           ngb-load-more="main.controller.loadMore()"
-           ngb-filter="main.controller.filter"
-           ngb-selection="main.controller.selection"
-           ngb-select-all="main.controller.selectAll()"></div>
+           ngb-items="main.countries"
+           ngb-load-more="main.loadMore()"
+           ngb-filter="main.filter"
+           ngb-selection="main.selection"
+           ngb-select-all="main.selectAll()"></div>
     </div>
     <div>
       <pre>
-        {{ main.controller.selectionStr }}
+        {{ main.selectionStr }}
       </pre>
     </div>
   </div>
-
-
-  <form class="ngb-list-search" role="form">
-    <div class="input-group input-group-sm">
-      <input type="text" class="form-control" placeholder="Search" ng-model="ngbFilter">
-      <div class="input-group-btn">
-        <button type="button" class="btn btn-default" aria-label="Select all">
-          <span class="fa fa-check-square"></span>
-        </button>
-        <button type="button" class="btn btn-default" aria-label="Clear selection">
-          <!--<span class="fa fa-square-o"></span>-->
-          <span class="fa fa-ban"></span>
-        </button>
-      </div>
-    </div>
-  </form>
 </body>
 </html>
