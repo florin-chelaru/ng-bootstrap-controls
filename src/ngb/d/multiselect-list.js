@@ -104,7 +104,7 @@ Object.defineProperty(ngb.d.MultiselectList, 'options', {
           '</div>' +
         '</form>' +
         '<div class="list-group list" ng-class="{\'ngb-has-title\': !!ngbTitle}">' +
-          '<a ng-repeat="item in ngbItems | filter:ngbFilter" href="#" class="list-group-item" ng-class="{\'active\': ngbMultiselectList.isSelected(item)}" ng-click="ngbMultiselectList.select(item)" >{{ item.label }}</a>' +
+          '<a ng-repeat="item in ngbItems | filter:ngbFilter" href="" class="list-group-item" ng-class="{\'active\': ngbMultiselectList.isSelected(item)}" ng-click="ngbMultiselectList.select(item)" >{{ item.label }}</a>' +
         '</div>',
       'scope': {
         'ngbTitle': '=',
