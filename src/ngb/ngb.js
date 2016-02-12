@@ -7,9 +7,11 @@
 goog.provide('ngb');
 
 goog.require('ngb.d.MultiselectList');
-goog.require('ngb.d.PatientModal');
 
-ngb.main = angular.module('ngb', ['ngu']);
+goog.require('ngb.d.PatientModal');
+goog.require('ngb.s.Modal');
+
+ngb.main = angular.module('ngb', ['ngu', 'ui.bootstrap', 'ngAnimate']);
 
 ngb.main.directive('ngbMultiselectList', ['$timeout', function() {
   return ngu.Directive.createNew('ngbMultiselectList', /** @type {function(new: ngu.Directive)} */ (ngb.d.MultiselectList), arguments, {restrict: 'A'});
@@ -19,7 +21,15 @@ ngb.main.directive('ngbPatientModal', ['$compile', function() {
   return ngu.Directive.createNew('ngbPatientModal', /** @type {function(new: ngu.Directive)} */ (ngb.d.PatientModal), arguments, {restrict: 'C'});
 }]);
 
-ngb.main.run(["$templateCache", function($templateCache) {
+ngb.main.provider('$ngbModal', function() {
+  return new ngb.s.ModalProvider(ngb.s.Modal, ['$uibModal', '$q', '$templateCache']);
+});
+
+ngb.main.controller('ngb.s.ModalController', ['$scope', '$uibModalInstance', '$ngbAnimation', 'contentTemplateUrl', function() {
+  return u.reflection.applyConstructor(ngb.s.ModalController, arguments);
+}]);
+
+/*ngb.main.run(["$templateCache", function($templateCache) {
   $templateCache.put("ngb/template/modal/window.html",
     "<div modal-render=\"{{$isRendered}}\" tabindex=\"-1\" role=\"dialog\" class=\"modal\"\n" +
     "    uib-modal-animation-class=\"fade\"\n" +
@@ -28,7 +38,7 @@ ngb.main.run(["$templateCache", function($templateCache) {
     "    <div class=\"modal-dialog {{size ? 'modal-' + size : ''}}\" ngu-transition-end=\"$parent.animationEnd.resolve()\"><div class=\"modal-content\" uib-modal-transclude></div></div>\n" +
     "</div>\n" +
     "");
-}]);
+}]);*/
 
 /*ngb.main.provider('$ngbModal', function () {
 

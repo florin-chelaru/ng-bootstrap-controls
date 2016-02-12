@@ -30,14 +30,15 @@ ngb.d.PatientModal.options = {
       '<div class="ngb-loader" ng-class="loaderClass || \'\'"></div>' +
     '</div>' +
     '<div class="modal-header">' +
-      '<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>' +
+      '<button type="button" class="close" ng-click="close()" aria-hidden="true">×</button>' +
       '<h4 class="modal-title">{{ title }}</h4>' +
     '</div>' +
     '<div class="modal-body">' +
     '</div>' +
     '<div class="modal-footer">' +
-      '<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>' +
-      '<button type="button" class="btn btn-primary">Save changes</button>' +
+      '<button ng-repeat="(btnLabel, btnFunc) in footerButtons" ' +
+              'type="button" class="btn" ng-class="$index == 0 ? \'btn-primary\' : \'btn-default\'" ' +
+              'ng-click="btnFunc()">{{ btnLabel }}</button>' +
     '</div>'
 };
 
@@ -74,10 +75,10 @@ ngb.d.PatientModal.prototype.link = function ($scope, $element, $attrs) {
     $body.addClass('ngb-modal-open');
   };
 
-  $scope.animationEnd.promise.then(function() {
+  $scope['$ngbAnimation'].promise.then(function() {
     $body.addClass('ngb-modal-open-blur');
 
-    var ngContent = angular.element('<div ng-include="\'../res/html/_login.html\'" onload="contentLoaded()"></div>');
+    var ngContent = angular.element('<div ng-include="contentTemplateUrl" onload="contentLoaded()"></div>');
     var $content = $compile(ngContent)($scope);
 
     var $modalBody = $element.find('.modal-body');

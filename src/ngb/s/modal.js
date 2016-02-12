@@ -6,6 +6,9 @@
 
 goog.provide('ngb.s.ModalProvider');
 goog.provide('ngb.s.Modal');
+goog.provide('ngb.s.ModalController');
+
+goog.require('ngb.d.PatientModal');
 
 /**
  * @param {function(new: ngu.ProviderService)} serviceCtor
@@ -19,10 +22,8 @@ ngb.s.ModalProvider = function(serviceCtor, serviceArgs) {
   /**
    * @type {{animation: boolean, backdrop: boolean, keyboard: boolean}}
    */
-  this.options = {
-    animation: true,
-    backdrop: true,
-    keyboard: true
+  this['options'] = {
+    'useDefault': false
   };
 };
 
@@ -30,17 +31,19 @@ goog.inherits(ngb.s.ModalProvider, ngu.Provider);
 
 /**
  * @param {ngu.Provider} provider
- * @param {angular.$injector} $injector
- * @param $rootScope
+ * @param $uibModal
  * @param {angular.$q} $q
- * @param $templateRequest
- * @param {angular.$controller} $controller
- * @param {ngb.s.ModalStack} modalStack
+ * @param {angular.$templateCache} $templateCache
  * @constructor
  * @extends {ngu.ProviderService}
  */
-ngb.s.Modal = function(provider, $injector, $rootScope, $q, $templateRequest, $controller, modalStack) {
+ngb.s.Modal = function(provider, $uibModal, $q, $templateCache) {
   ngu.ProviderService.apply(this, arguments);
+
+  /**
+   * @private
+   */
+  this._$uibModal = $uibModal;
 
   /**
    * @type {angular.$q}
@@ -49,109 +52,134 @@ ngb.s.Modal = function(provider, $injector, $rootScope, $q, $templateRequest, $c
   this._$q = $q;
 
   /**
-   * @type {ngb.s.ModalStack}
+   * @type {angular.$templateCache}
    * @private
    */
-  this._modalStack = modalStack;
+  this._$templateCache = $templateCache;
+
+  $templateCache.put('ngb/template/modal/window.html',
+    '<div modal-render="{{$isRendered}}" tabindex="-1" role="dialog" class="modal" ' +
+          'uib-modal-animation-class="fade" ' +
+          'modal-in-class="in" ' +
+          'ng-style="{\'z-index\': 1050 + index*10, display: \'block\'}">' +
+      '<div class="modal-dialog {{size ? \'modal-\' + size : \'\'}}" ' +
+            'ngu-transition-end="$parent.$ngbAnimation.resolve()">' +
+        '<div class="modal-content" uib-modal-transclude></div>' +
+      '</div>' +
+    '</div>');
+
+  $templateCache.put('ngb/template/modal/content.html', '<div class="ngb-patient-modal"></div>');
 };
 
 goog.inherits(ngb.s.Modal, ngu.ProviderService);
 
 /**
- * @param {{animation: (boolean|undefined), backdrop: (boolean|string|undefined), backdropClass: (string|undefined),
- *   bindToController: (boolean|undefined), controller: (Function|string|Array|undefined),
- *   controllerAs: (string|undefined), keyboard: (boolean|undefined), resolve: (Object|undefined),
- *   $scope: angular.Scope, size: (string|undefined), template: (string|undefined),
- *   templateUrl: (string|undefined), windowClass: (string|undefined), windowTemplateUrl: (string|undefined)
- * }} modalOptions
- * @returns {{result: *, opened: *, rendered: *, close: modalInstance.close, dismiss: modalInstance.dismiss}}
+ * @param {{animation: (boolean|undefined), appendTo: (angular.element|undefined), backdrop: (boolean|string|undefined),
+ *   backdropClass: (string|undefined), bindToController: (boolean|undefined),
+ *   controller: (Function|string|Array|undefined), controllerAs: (string|undefined), keyboard: (boolean|undefined),
+ *   openedClass: (string|undefined), resolve: (Object|undefined), $scope: angular.Scope, size: (string|undefined),
+ *   template: (string|undefined), templateUrl: (string|undefined), windowClass: (string|undefined),
+ *   windowTemplateUrl: (string|undefined), windowTopClass: (string|undefined),
+ *   contentTemplateUrl: string
+ * }} [modalOptions]
+ * @returns {{result: angular.$q.Promise, opened: angular.$q.Promise, closed: angular.$q.Promise, rendered: angular.$q.Promise, close: Function, dismiss: Function}}
  */
 ngb.s.Modal.prototype.open = function(modalOptions) {
-  var self = this;
+  var $q = this._$q;
 
-  var modalStack = this._modalStack;
-  var modalProvider = this['provider'];
+  modalOptions = modalOptions || {};
 
-  var modalResultDeferred = $q.defer();
-  var modalOpenedDeferred = $q.defer();
-  var modalRenderDeferred = $q.defer();
-
-  //prepare an instance of a modal to be injected into controllers and returned to a caller
-  var modalInstance = {
-    result: modalResultDeferred.promise,
-    opened: modalOpenedDeferred.promise,
-    rendered: modalRenderDeferred.promise,
-    close: function (result) {
-      return modalStack.close(modalInstance, result);
-    },
-    dismiss: function (reason) {
-      return modalStack.dismiss(modalInstance, reason);
-    }
-  };
-
-  //merge and clean up options
-  modalOptions = u.extend({}, modalProvider.options, modalOptions);
-  modalOptions['resolve'] = modalOptions['resolve'] || {};
-
-  //verify options
-  if (!modalOptions['template'] && !modalOptions['templateUrl']) {
-    throw new Error('One of template or templateUrl options is required.');
+  if (modalOptions['useDefault']) {
+    return this._$uibModal.open(modalOptions);
   }
 
-  var templateAndResolvePromise =
-    $q.all([getTemplatePromise(modalOptions)].concat(getResolvePromises(modalOptions['resolve'])));
+  var animation = !!modalOptions['animation'];
+  modalOptions['templateUrl'] = 'ngb/template/modal/content.html';
+  delete modalOptions['template']; // this is only used when in default mode
+  modalOptions['windowTemplateUrl'] = 'ngb/template/modal/window.html';
+  modalOptions['controller'] = modalOptions['controller'] || 'ngb.s.ModalController';
+  modalOptions['resolve'] = u.extend({}, {
+    '$ngbAnimation': function() { return $q.defer(); },
+    'contentTemplateUrl': function() { return modalOptions['contentTemplateUrl']; }
+  }, modalOptions['resolve'] || {});
 
-
-  templateAndResolvePromise.then(function resolveSuccess(tplAndVars) {
-
-    var modalScope = (modalOptions['$scope'] || $rootScope).$new();
-    modalScope.$close = modalInstance.close;
-    modalScope.$dismiss = modalInstance.dismiss;
-
-    var ctrlInstance, ctrlLocals = {};
-    var resolveIter = 1;
-
-    //controllers
-    if (modalOptions['controller']) {
-      ctrlLocals.$scope = modalScope;
-      ctrlLocals.$modalInstance = modalInstance;
-      angular.forEach(modalOptions['resolve'], function (value, key) {
-        ctrlLocals[key] = tplAndVars[resolveIter++];
-      });
-
-      ctrlInstance = $controller(modalOptions['controller'], ctrlLocals);
-      if (modalOptions['controllerAs']) {
-        if (modalOptions['bindToController']) {
-          angular.extend(ctrlInstance, modalScope);
-        }
-
-        modalScope[modalOptions['controllerAs']] = ctrlInstance;
-      }
-    }
-
-    modalStack.open(modalInstance, {
-      scope: modalScope,
-      deferred: modalResultDeferred,
-      renderDeferred: modalRenderDeferred,
-      content: tplAndVars[0],
-      animation: modalOptions['animation'],
-      backdrop: modalOptions['backdrop'],
-      keyboard: modalOptions['keyboard'],
-      backdropClass: modalOptions['backdropClass'],
-      windowClass: modalOptions['windowClass'],
-      windowTemplateUrl: modalOptions['windowTemplateUrl'],
-      size: modalOptions['size']
-    });
-
-  }, function resolveError(reason) {
-    modalResultDeferred.reject(reason);
-  });
-
-  templateAndResolvePromise.then(function () {
-    modalOpenedDeferred.resolve(true);
-  }, function (reason) {
-    modalOpenedDeferred.reject(reason);
-  });
-
-  return modalInstance;
+  return this._$uibModal.open(modalOptions);
 };
+
+/**
+ * @param {angular.Scope} $scope
+ * @param {{result: angular.$q.Promise, opened: angular.$q.Promise, closed: angular.$q.Promise, rendered: angular.$q.Promise, close: Function, dismiss: Function}} $uibModalInstance
+ * @param {angular.$q.Deferred} $ngbAnimation
+ * @param {string} contentTemplateUrl
+ * @constructor
+ * @extends {ngu.Controller}
+ */
+ngb.s.ModalController = function($scope, $uibModalInstance, $ngbAnimation, contentTemplateUrl) {
+  ngu.Controller.apply(this, arguments);
+
+  /**
+   * @type {{result: angular.$q.Promise, opened: angular.$q.Promise, closed: angular.$q.Promise, rendered: angular.$q.Promise, close: Function, dismiss: Function}}
+   * @private
+   */
+  this._$modalInstance = $uibModalInstance;
+
+  /**
+   * @type {angular.$q.Deferred}
+   * @private
+   */
+  this._$ngbAnimation = $ngbAnimation;
+
+  /**
+   * @type {string}
+   * @private
+   */
+  this._contentTemplateUrl = contentTemplateUrl;
+
+  $scope['$ngbAnimation'] = $ngbAnimation;
+  $scope['contentTemplateUrl'] = contentTemplateUrl;
+  $scope['title'] = this['title'] || 'Modal title';
+  $scope['loaderClass'] = this['loaderClass'] || '';
+  $scope['close'] = this['close'] || function() { $uibModalInstance.dismiss('close'); };
+  $scope['footerButtons'] = this['footerButtons'] || {
+      'Ok': function() { $uibModalInstance.close(); },
+      'Cancel': function() { $uibModalInstance.dismiss('cancel'); }
+    };
+};
+
+goog.inherits(ngb.s.ModalController, ngu.Controller);
+
+/**
+ * @type {{result: angular.$q.Promise, opened: angular.$q.Promise, closed: angular.$q.Promise, rendered: angular.$q.Promise, close: function(*), dismiss: function(*)}}
+ * @name ngb.s.ModalController#$modalInstance
+ */
+ngb.s.ModalController.prototype.$modalInstance;
+
+/**
+ * @type {angular.$q.Deferred}
+ * @name ngb.s.ModalController#$ngbAnimation
+ */
+ngb.s.ModalController.prototype.$ngbAnimation;
+
+/**
+ * @type {string}
+ * @name ngb.s.ModalController#contentTemplateUrl
+ */
+ngb.s.ModalController.prototype.contentTemplateUrl;
+
+Object.defineProperties(ngb.s.ModalController.prototype, {
+  '$modalInstance': {
+    get: /** @type {function (this:ngb.s.ModalController)} */ (function () {
+      return this._$modalInstance;
+    })
+  },
+  '$ngbAnimation': {
+    get: /** @type {function (this:ngb.s.ModalController)} */ (function () {
+      return this._$ngbAnimation;
+    })
+  },
+  'contentTemplateUrl': {
+    get: /** @type {function (this:ngb.s.ModalController)} */ (function () {
+      return this._contentTemplateUrl;
+    })
+  }
+});

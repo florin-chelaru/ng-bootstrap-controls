@@ -10,23 +10,18 @@ goog.require('ngu.Controller');
 
 /**
  * @param {angular.Scope} $scope Angular scope
- * @param $uibModal
- * @param {angular.$q} $q
+ * @param {ngb.s.Modal} $ngbModal
  * @constructor
  * @extends {ngu.Controller}
  */
-ngb.test.MainController = function ($scope, $uibModal, $q) {
+ngb.test.MainController = function ($scope, $ngbModal) {
   ngu.Controller.apply(this, arguments);
 
   /**
-   */
-  this._$modal = $uibModal;
-
-  /**
-   * @type {angular.$q}
+   * @type {ngb.s.Modal}
    * @private
    */
-  this._$q = $q;
+  this._$modal = $ngbModal;
 
   /**
    * @type {string}
@@ -199,13 +194,13 @@ ngb.test.MainController.prototype.showModal = function() {
 
   $('.modal-backdrop').addClass('in');
   $('.modal').addClass('in');*/
-  var $q = this._$q;
+  /*var $q = this._$q;
   var modalInstance = this._$modal.open({
     animation: true,
     //backdrop: 'static',
     //templateUrl: 'res/html/_large-content2.php',
     template: '<div class="ngb-patient-modal"></div>',
-    /*  '<div class="modal-header">' +
+    /!*  '<div class="modal-header">' +
         '<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>' +
         '<h4 class="modal-title">{{ title }}</h4>' +
       '</div>' +
@@ -215,7 +210,7 @@ ngb.test.MainController.prototype.showModal = function() {
       '<div class="modal-footer">' +
         '<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>' +
         '<button type="button" class="btn btn-primary">Save changes</button>' +
-      '</div>',*/
+      '</div>',*!/
     windowTemplateUrl: 'ngb/template/modal/window.html',
     controller: ['$scope', '$uibModalInstance', 'title', 'animationEnd', function($scope, $uibModalInstance, title, animationEnd) {
       $scope.title = title;
@@ -229,11 +224,16 @@ ngb.test.MainController.prototype.showModal = function() {
       animationEnd: function() { return $q.defer(); }
     }
   });
-
+*/
+  var modalInstance = this._$modal.open({
+    'contentTemplateUrl': '../res/html/_login.html'
+  });
   modalInstance.result.then(function (selectedItem) {
     //$scope.selected = selectedItem;
-    console.log('selectedItem:', selectedItem);
+    //console.log('selectedItem:', selectedItem);
   }, function () {
     console.info('Modal dismissed at: ' + new Date());
   });
+
+
 };
