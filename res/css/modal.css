@@ -1,32 +1,3 @@
-.ngb-multiselect-list {
-  width: 100%;
-  height: 100%;
-  position: relative;
-}
-.ngb-multiselect-list > .list-group {
-  margin: 0;
-  overflow-y: auto;
-  max-height: calc(100% - 34px);
-}
-.ngb-multiselect-list > .list-group.ngb-has-title {
-  max-height: calc(100% - 34px - 50px);
-}
-.ngb-multiselect-list .ngb-list-search > .input-group > .form-control:first-child {
-  border-radius: 0;
-}
-.ngb-multiselect-list .ngb-list-search .input-group-btn > .btn:last-child {
-  border-radius: 0;
-}
-.ngb-multiselect-list .list-group-item:first-child {
-  border-radius: 0;
-}
-.ngb-multiselect-list .list-group-item:last-child {
-  border-radius: 0;
-}
-.ngb-multiselect-list .navbar {
-  margin-bottom: 0;
-  border-radius: 0;
-}
 .ngb-modal-overlay {
   position: absolute;
   z-index: 1051;

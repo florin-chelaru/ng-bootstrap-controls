@@ -1,55 +1,40 @@
-.ngb-multiselect-list {
-  width: 100%;
-  height: 100%;
-  position: relative;
-}
-.ngb-multiselect-list > .list-group {
-  margin: 0;
-  overflow-y: auto;
-  max-height: calc(100% - 34px);
-}
-.ngb-multiselect-list > .list-group.ngb-has-title {
-  max-height: calc(100% - 34px - 50px);
-}
-.ngb-multiselect-list .ngb-list-search > .input-group > .form-control:first-child {
-  border-radius: 0;
-}
-.ngb-multiselect-list .ngb-list-search .input-group-btn > .btn:last-child {
-  border-radius: 0;
-}
-.ngb-multiselect-list .list-group-item:first-child {
-  border-radius: 0;
-}
-.ngb-multiselect-list .list-group-item:last-child {
-  border-radius: 0;
-}
-.ngb-multiselect-list .navbar {
-  margin-bottom: 0;
-  border-radius: 0;
-}
+@import (reference,less) "../../bower_components/bootstrap/less/variables.less";
+@import (reference,less) "../../bower_components/bootstrap/less/mixins.less";
+@import (reference,less) "mixins.less";
+
+@modal-backdrop-bg: @body-bg;
+@modal-v-margin-xs: 10px;
+@modal-v-margin: 30px;
+@modal-backdrop-opacity: .8;
+
 .ngb-modal-overlay {
+  // This is to appear inside the dialog
   position: absolute;
+
   z-index: 1051;
+
   top: 0;
   left: 0;
   height: 100%;
   width: 100%;
-  background-color: #ffffff;
-  -webkit-transition: opacity 0.15s linear;
-  -o-transition: opacity 0.15s linear;
-  transition: opacity 0.15s linear;
+  background-color: @body-bg;
+  .transition(opacity .15s linear);
+
+  .ngb-loader.timer-loader {
+    position: absolute;
+    top: ~'calc(50% - 24px)';
+    left: ~'calc(50% - 24px)';
+  }
 }
-.ngb-modal-overlay .ngb-loader.timer-loader {
-  position: absolute;
-  top: calc(50% - 24px);
-  left: calc(50% - 24px);
-}
+
 .ngb-patient-modal {
   height: 100%;
 }
+
 .modal-content {
   overflow: hidden;
 }
+
 /*.modal-body {
   overflow: hidden;
 
@@ -61,44 +46,56 @@
     max-height: 1600px;
   }
 }*/
+
+// GOOD
 .modal {
   height: 100%;
   -webkit-overflow-scrolling: touch;
-}
-.modal .modal-dialog {
-  height: calc(100% - 2 * 10px);
-}
-@media (min-width: 768px) {
-  .modal .modal-dialog {
-    height: calc(100% - 2 * 30px);
-  }
-}
-.modal .modal-dialog .modal-content {
-  /*min-height: 100%;*/
-  height: 100%;
-  background-color: transparent;
-  -webkit-box-shadow: none;
-  box-shadow: none;
-  border: none;
-  padding-top: 56px;
-  padding-bottom: 64px;
-  /*.modal-footer {
+
+  .modal-dialog {
+
+    height: ~'calc(100% - 2 * @{modal-v-margin-xs})';
+
+    @media (min-width: @screen-sm-min) {
+      height: ~'calc(100% - 2 * @{modal-v-margin})';
+    }
+
+    .modal-content {
+      /*min-height: 100%;*/
+      height: 100%;
+      background-color: transparent;
+      .box-shadow(none);
+      border: none;
+
+      padding-top: 56px; // font size h4 18 * line height 1.42857143 + padding 15 + 15
+      padding-bottom: 64px; // font size normal 14 * line height 1.42857143 + padding 15 + 15
+
+      .modal-header {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+      }
+
+      .modal-body {
+        //height: 100%;
+        max-height: 100%;
+        overflow-y: auto;
+      }
+
+      // Pretty good
+      /*.modal-footer {
         position: absolute;
         bottom: 0;
         left: 0;
         width: 100%;
       }*/
+    }
+  }
 }
-.modal .modal-dialog .modal-content .modal-header {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-}
-.modal .modal-dialog .modal-content .modal-body {
-  max-height: 100%;
-  overflow-y: auto;
-}
+
+//
+
 /*.ngb-modal {
   position: fixed;
   top: 0;
@@ -122,46 +119,59 @@
     .filter(none);
   }
 }*/
+
+
+
+// Modal background
+// GOOD
 .modal-backdrop {
   position: fixed;
   top: 0;
   right: 0;
   bottom: 0;
   left: 0;
-  z-index: 1040;
-  background-color: #ffffff;
+  z-index: @zindex-modal-background;
+  background-color: @modal-backdrop-bg;
+  // Fade for backdrop
+  &.fade { .opacity(0); }
+  &.in { .opacity(1); }
 }
-.modal-backdrop.fade {
-  opacity: 0;
-  filter: alpha(opacity=0);
+.ngb-modal-open {
+  .modal-backdrop.fade.in {
+    .opacity(@modal-backdrop-opacity);
+  }
 }
-.modal-backdrop.in {
-  opacity: 1;
-  filter: alpha(opacity=100);
-}
-.ngb-modal-open .modal-backdrop.fade.in {
-  opacity: 0.8;
-  filter: alpha(opacity=80);
-}
-.ngb-modal-open-blur > * {
-  /*.filter(blur(5px));
+
+.ngb-modal-open-blur {
+  & > * {
+    /*.filter(blur(5px));
     .translate3d(0; 0; 0);*/
-  /*filter:url(#wherearemyglasses);
+    /*filter:url(#wherearemyglasses);
     !* ^ for Firefox *!
     -webkit-filter: blur(1px);
     !* ^ Webkit browsers *!
     filter: blur(1px);*/
-}
-.ngb-modal-open-blur > .modal,
-.ngb-modal-open-blur > .modal-backdrop {
-  /*.filter(none);
+  }
+  & > .modal,
+  & > .modal-backdrop {
+    /*.filter(none);
     .translate3d(0; 0; 0);*/
-  /*filter:none;
+    /*filter:none;
     !* ^ for Firefox *!
     -webkit-filter: none;
     !* ^ Webkit browsers *!
     filter: none;*/
+  }
 }
+
+//
+// Modals
+// --------------------------------------------------
+
+// .modal-open      - body class for killing the scroll
+// .modal           - container to scroll within
+// .modal-dialog    - positioning shell for the actual modal
+// .modal-content   - actual modal w/ bg and corners and shit
 /*
 
 // Kill the scroll on the body
@@ -206,6 +216,7 @@
 .modal-open .modal {
   overflow-x: hidden;
   overflow-y: auto;
+
   /*-webkit-perspective: 1000;
           perspective: 1000;
 

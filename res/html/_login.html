@@ -1,0 +1,14 @@
+  <form name="loginForm_YNQD1b"  ui-keypress="{13:'dialog.ok()'}" class="" style="">
+    <div class="form-group" >
+      <label>User name:</label>
+      <input type="text" class="form-control " name="username" placeholder="username" tooltip="Type your user name here" tooltip-placement="top" tooltip-trigger="mouseenter" tooltip-popup-delay="1000" tooltip-enable="!dialog.userName" maxlength="128" required="" autofocus="" ui-validate="{empty: '!!$value'}" style="">
+    </div>
+    <!-- ngIf: dialog.signUp -->
+    <div class="form-group" >
+      <label>Password:</label>
+      <input type="password" class="form-control " name="password" placeholder="password" tooltip="Type your password here" tooltip-placement="top" tooltip-trigger="mouseenter" tooltip-popup-delay="1000" tooltip-enable="!dialog.password" maxlength="128" required="" ui-validate="{empty: '!!$value'}" style="">
+    </div>
+    <!-- ngIf: dialog.signUp -->
+    <button class="btn btn-primary btn-block " >Log in</button>
+  </form>
+

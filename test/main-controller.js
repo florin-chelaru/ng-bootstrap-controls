@@ -10,11 +10,23 @@ goog.require('ngu.Controller');
 
 /**
  * @param {angular.Scope} $scope Angular scope
+ * @param $uibModal
+ * @param {angular.$q} $q
  * @constructor
  * @extends {ngu.Controller}
  */
-ngb.test.MainController = function ($scope) {
+ngb.test.MainController = function ($scope, $uibModal, $q) {
   ngu.Controller.apply(this, arguments);
+
+  /**
+   */
+  this._$modal = $uibModal;
+
+  /**
+   * @type {angular.$q}
+   * @private
+   */
+  this._$q = $q;
 
   /**
    * @type {string}
@@ -175,4 +187,53 @@ ngb.test.MainController.prototype.loadMore = function() {
 ngb.test.MainController.prototype.selectAll = function() {
   var self = this;
   this._allCountries.forEach(function(item) { self._selection[item.index] = item; });
+};
+
+ngb.test.MainController.prototype.showModal = function() {
+  /*$('body').addClass('modal-open');
+  $('.modal').css('display', 'block');
+  $('.modal-backdrop').css('display', 'block');
+
+  $('.modal')[0].offsetWidth;
+  $('.modal-backdrop')[0].offsetWidth;
+
+  $('.modal-backdrop').addClass('in');
+  $('.modal').addClass('in');*/
+  var $q = this._$q;
+  var modalInstance = this._$modal.open({
+    animation: true,
+    //backdrop: 'static',
+    //templateUrl: 'res/html/_large-content2.php',
+    template: '<div class="ngb-patient-modal"></div>',
+    /*  '<div class="modal-header">' +
+        '<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>' +
+        '<h4 class="modal-title">{{ title }}</h4>' +
+      '</div>' +
+      '<div class="modal-body">' +
+        '<p>One fine body…</p>' +
+      '</div>' +
+      '<div class="modal-footer">' +
+        '<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>' +
+        '<button type="button" class="btn btn-primary">Save changes</button>' +
+      '</div>',*/
+    windowTemplateUrl: 'ngb/template/modal/window.html',
+    controller: ['$scope', '$uibModalInstance', 'title', 'animationEnd', function($scope, $uibModalInstance, title, animationEnd) {
+      $scope.title = title;
+      $scope.animationEnd = animationEnd;
+       $scope.loaderClass = 'timer-loader';
+       $scope.contentUrl = '';
+    }],
+    size: 'sm',
+    resolve: {
+      title: function () { return 'My modal'; },
+      animationEnd: function() { return $q.defer(); }
+    }
+  });
+
+  modalInstance.result.then(function (selectedItem) {
+    //$scope.selected = selectedItem;
+    console.log('selectedItem:', selectedItem);
+  }, function () {
+    console.info('Modal dismissed at: ' + new Date());
+  });
 };

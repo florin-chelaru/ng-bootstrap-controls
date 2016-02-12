@@ -19,7 +19,10 @@
     "tests"
   ],
   "dependencies": {
-    "angular": "1.4.4",
+    "angular": ">=1.4.4",
+    "angular-animate": ">=1.5.0",
+    "angular-bootstrap": ">=1.1.2",
+
     "bootstrap": "3.3.6",
     "components-font-awesome": "4.5.0",
 
@@ -30,6 +33,7 @@
   "devDependencies": {
     "google-closure-library": "git://github.com/google/closure-library.git#56712dfced32778fc8435a4bea6a2e422e5f03c1",
     "closure-compiler": "0.2.7",
-    "qunit": "1.19.0"
+    "qunit": "1.19.0",
+    "css-spinners": "2.2.0"
   }
 }

@@ -8,8 +8,8 @@ goog.provide('ngb.test');
 
 goog.require('ngb.test.MainController');
 
-ngb.test.App = angular.module('ngb.test.App', ['ngb']);
+ngb.test.App = angular.module('ngb.test.App', ['ngb', 'ui.bootstrap', 'ngAnimate']);
 
-ngb.test.App.controller('ngb.test.MainController', ['$scope', function() {
+ngb.test.App.controller('ngb.test.MainController', ['$scope', '$uibModal', '$q', function() {
   return u.reflection.applyConstructor(ngb.test.MainController, arguments);
 }]);
