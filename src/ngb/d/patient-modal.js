@@ -24,7 +24,7 @@ ngb.d.PatientModal = function ($scope, $compile) {
 
 goog.inherits(ngb.d.PatientModal, ngu.Directive);
 
-ngb.d.PatientModal.options = {
+ngb.d.PatientModal['options'] = {
   'template':
     '<div class="ngb-modal-overlay">' +
       '<div class="ngb-loader" ng-class="loaderClass || \'\'"></div>' +
@@ -59,14 +59,7 @@ ngb.d.PatientModal.prototype.link = function ($scope, $element, $attrs) {
     $body.removeClass('ngb-modal-open-blur');
   });
 
-  /*var $body = $('body');
-  var $overlay = $(
-    '<div class="ngb-modal-overlay">' +
-      '<div class="ngb-loader ' + ($scope.loaderClass || '') + '"></div>' +
-    '</div>');
-  $overlay.appendTo($body);*/
-
-  $scope.contentLoaded = function() {
+  $scope['contentLoaded'] = function() {
     var $overlay = $element.find('.ngb-modal-overlay');
     $overlay.one('transitionend', function() {
       $overlay.css('display', 'none');
@@ -79,10 +72,11 @@ ngb.d.PatientModal.prototype.link = function ($scope, $element, $attrs) {
     $body.addClass('ngb-modal-open-blur');
 
     var ngContent = angular.element('<div ng-include="contentTemplateUrl" onload="contentLoaded()"></div>');
-    var $content = $compile(ngContent)($scope);
+    /** @type {!angular.JQLite|jQuery} */
+    var $content = ($compile(ngContent)(/** @type {!angular.Scope} */($scope)));
 
     var $modalBody = $element.find('.modal-body');
-    $modalBody.append($content);
+    $modalBody.append(/** @type {jQuery} */($content));
   });
 };
 

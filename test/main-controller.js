@@ -226,7 +226,10 @@ ngb.test.MainController.prototype.showModal = function() {
   });
 */
   var modalInstance = this._$modal.open({
-    'contentTemplateUrl': '../res/html/_login.html'
+    //'contentTemplateUrl': '../res/html/_login.html',
+    'contentTemplateUrl': '../res/html/_large-content2.php',
+    'title': 'Some title',
+    'loaderClass': 'timer-loader'
   });
   modalInstance.result.then(function (selectedItem) {
     //$scope.selected = selectedItem;

@@ -23,7 +23,8 @@ ngb.s.ModalProvider = function(serviceCtor, serviceArgs) {
    * @type {{animation: boolean, backdrop: boolean, keyboard: boolean}}
    */
   this['options'] = {
-    'useDefault': false
+    'useDefault': false,
+    'animation': true
   };
 };
 
@@ -58,7 +59,7 @@ ngb.s.Modal = function(provider, $uibModal, $q, $templateCache) {
   this._$templateCache = $templateCache;
 
   $templateCache.put('ngb/template/modal/window.html',
-    '<div modal-render="{{$isRendered}}" tabindex="-1" role="dialog" class="modal" ' +
+    '<div modal-render="{{$isRendered}}" tabindex="-1" role="dialog" class="modal ngb-modal" ' +
           'uib-modal-animation-class="fade" ' +
           'modal-in-class="in" ' +
           'ng-style="{\'z-index\': 1050 + index*10, display: \'block\'}">' +
@@ -74,36 +75,41 @@ ngb.s.Modal = function(provider, $uibModal, $q, $templateCache) {
 goog.inherits(ngb.s.Modal, ngu.ProviderService);
 
 /**
- * @param {{animation: (boolean|undefined), appendTo: (angular.element|undefined), backdrop: (boolean|string|undefined),
+ * @param {{animation: (boolean|undefined), appendTo: (jQuery|undefined), backdrop: (boolean|string|undefined),
  *   backdropClass: (string|undefined), bindToController: (boolean|undefined),
  *   controller: (Function|string|Array|undefined), controllerAs: (string|undefined), keyboard: (boolean|undefined),
  *   openedClass: (string|undefined), resolve: (Object|undefined), $scope: angular.Scope, size: (string|undefined),
  *   template: (string|undefined), templateUrl: (string|undefined), windowClass: (string|undefined),
  *   windowTemplateUrl: (string|undefined), windowTopClass: (string|undefined),
- *   contentTemplateUrl: string
+ *   contentTemplateUrl: string, title: (string|undefined), loaderClass: (string|undefined)
  * }} [modalOptions]
  * @returns {{result: angular.$q.Promise, opened: angular.$q.Promise, closed: angular.$q.Promise, rendered: angular.$q.Promise, close: Function, dismiss: Function}}
  */
 ngb.s.Modal.prototype.open = function(modalOptions) {
   var $q = this._$q;
 
-  modalOptions = modalOptions || {};
+  var options = modalOptions || {};
 
-  if (modalOptions['useDefault']) {
-    return this._$uibModal.open(modalOptions);
+  if (options['useDefault'] || (options['useDefault'] !== false && this['provider']['options']['useDefault'])) {
+    return this._$uibModal['open'](options);
   }
 
-  var animation = !!modalOptions['animation'];
-  modalOptions['templateUrl'] = 'ngb/template/modal/content.html';
-  delete modalOptions['template']; // this is only used when in default mode
-  modalOptions['windowTemplateUrl'] = 'ngb/template/modal/window.html';
-  modalOptions['controller'] = modalOptions['controller'] || 'ngb.s.ModalController';
-  modalOptions['resolve'] = u.extend({}, {
-    '$ngbAnimation': function() { return $q.defer(); },
-    'contentTemplateUrl': function() { return modalOptions['contentTemplateUrl']; }
-  }, modalOptions['resolve'] || {});
+  var animation = ('animation' in options) ? !!options['animation'] : !!this['provider']['options']['animation'];
+  options['templateUrl'] = 'ngb/template/modal/content.html';
+  delete options['template']; // this is only used when in default mode
+  options['windowTemplateUrl'] = 'ngb/template/modal/window.html';
+  options['controller'] = options['controller'] || 'ngb.s.ModalController';
 
-  return this._$uibModal.open(modalOptions);
+  var $ngbAnimation = $q.defer();
+  if (!animation) { $ngbAnimation.resolve(); }
+  options['resolve'] = u.extend({}, {
+    '$ngbAnimation': function() { return $ngbAnimation; },
+    'contentTemplateUrl': function() { return options['contentTemplateUrl']; },
+    'title': function() { return options['title'] || 'Modal title'; },
+    'loaderClass': function() { return options['loaderClass'] || 'timer-loader'; }
+  }, options['resolve'] || {});
+
+  return this._$uibModal['open'](options);
 };
 
 /**
@@ -111,10 +117,12 @@ ngb.s.Modal.prototype.open = function(modalOptions) {
  * @param {{result: angular.$q.Promise, opened: angular.$q.Promise, closed: angular.$q.Promise, rendered: angular.$q.Promise, close: Function, dismiss: Function}} $uibModalInstance
  * @param {angular.$q.Deferred} $ngbAnimation
  * @param {string} contentTemplateUrl
+ * @param {string} title
+ * @param {string} loaderClass
  * @constructor
  * @extends {ngu.Controller}
  */
-ngb.s.ModalController = function($scope, $uibModalInstance, $ngbAnimation, contentTemplateUrl) {
+ngb.s.ModalController = function($scope, $uibModalInstance, $ngbAnimation, contentTemplateUrl, title, loaderClass) {
   ngu.Controller.apply(this, arguments);
 
   /**
@@ -137,13 +145,12 @@ ngb.s.ModalController = function($scope, $uibModalInstance, $ngbAnimation, conte
 
   $scope['$ngbAnimation'] = $ngbAnimation;
   $scope['contentTemplateUrl'] = contentTemplateUrl;
-  $scope['title'] = this['title'] || 'Modal title';
-  $scope['loaderClass'] = this['loaderClass'] || '';
-  $scope['close'] = this['close'] || function() { $uibModalInstance.dismiss('close'); };
-  $scope['footerButtons'] = this['footerButtons'] || {
-      'Ok': function() { $uibModalInstance.close(); },
-      'Cancel': function() { $uibModalInstance.dismiss('cancel'); }
-    };
+  $scope['title'] = title;
+  $scope['loaderClass'] = loaderClass;
+
+  var self = this;
+  $scope['close'] = function() { self.close(); };
+  $scope['footerButtons'] = this['footerButtons'];
 };
 
 goog.inherits(ngb.s.ModalController, ngu.Controller);
@@ -166,6 +173,12 @@ ngb.s.ModalController.prototype.$ngbAnimation;
  */
 ngb.s.ModalController.prototype.contentTemplateUrl;
 
+/**
+ * @type {Object.<string, Function>}
+ * @name ngb.s.ModalController#footerButtons
+ */
+ngb.s.ModalController.prototype.footerButtons;
+
 Object.defineProperties(ngb.s.ModalController.prototype, {
   '$modalInstance': {
     get: /** @type {function (this:ngb.s.ModalController)} */ (function () {
@@ -181,5 +194,20 @@ Object.defineProperties(ngb.s.ModalController.prototype, {
     get: /** @type {function (this:ngb.s.ModalController)} */ (function () {
       return this._contentTemplateUrl;
     })
+  },
+  'footerButtons': {
+    get: /** @type {function (this:ngb.s.ModalController)} */ (function () {
+      var $modalInstance = this._$modalInstance;
+      return {
+        'Ok': function() { $modalInstance['close'](); },
+        'Cancel': function() { $modalInstance['dismiss']('cancel'); }
+      };
+    })
   }
 });
+
+/**
+ */
+ngb.s.ModalController.prototype.close = function() {
+  this._$modalInstance['dismiss']('close');
+};

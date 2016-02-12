@@ -19,12 +19,14 @@
     "tests"
   ],
   "dependencies": {
-    "angular": ">=1.4.4",
-    "angular-animate": ">=1.5.0",
-    "angular-bootstrap": ">=1.1.2",
+    "jquery": "~2.1.4",
+    "angular": "~1.4.4",
+    "angular-animate": "~1.5.0",
+    "bootstrap": "~3.3.6",
+    "angular-bootstrap": "~1.1.2",
+    "css-spinners": "~2.2.0",
 
-    "bootstrap": "3.3.6",
-    "components-font-awesome": "4.5.0",
+    "components-font-awesome": "~4.5.0",
 
     "utils.js": "git://github.com/florin-chelaru/utils.js.git",
     "ng-utils": "git://github.com/florin-chelaru/ng-utils.git"
@@ -32,8 +34,6 @@
 
   "devDependencies": {
     "google-closure-library": "git://github.com/google/closure-library.git#56712dfced32778fc8435a4bea6a2e422e5f03c1",
-    "closure-compiler": "0.2.7",
-    "qunit": "1.19.0",
-    "css-spinners": "2.2.0"
+    "closure-compiler": "0.2.7"
   }
 }

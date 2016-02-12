@@ -3,23 +3,23 @@
 @import (reference,less) "mixins.less";
 
 @modal-backdrop-bg: @body-bg;
-@modal-v-margin-xs: 10px;
+@modal-v-margin-xs: 0px;
 @modal-v-margin: 30px;
 @modal-backdrop-opacity: .8;
+@modal-overlay-zindex: @zindex-modal + 1;
 
 .ngb-modal-overlay {
-  // This is to appear inside the dialog
   position: absolute;
-
-  z-index: 1051;
+  z-index: @modal-overlay-zindex;
 
   top: 0;
   left: 0;
   height: 100%;
   width: 100%;
   background-color: @body-bg;
-  .transition(opacity .15s linear);
+  border-radius: @border-radius-large; // without this, some black corners appear on the mobile for a short while
 
+  .transition(opacity .15s linear);
   .ngb-loader.timer-loader {
     position: absolute;
     top: ~'calc(50% - 24px)';
@@ -31,44 +31,37 @@
   height: 100%;
 }
 
-.modal-content {
-  overflow: hidden;
-}
-
-/*.modal-body {
-  overflow: hidden;
-
-  max-height: 0px;
-  .transition(max-height 1s linear);
-
-  &.ngb-modal-body-has-content {
-    !*overflow: auto;*!
-    max-height: 1600px;
-  }
-}*/
-
-// GOOD
-.modal {
+.ngb-modal.modal {
   height: 100%;
-  -webkit-overflow-scrolling: touch;
+  -webkit-overflow-scrolling: touch; // so that momentum is added to scroll on iOS
 
   .modal-dialog {
 
-    height: ~'calc(100% - 2 * @{modal-v-margin-xs})';
+    @media (max-width: @screen-xs-max) {
+      margin: @modal-v-margin-xs;
 
-    @media (min-width: @screen-sm-min) {
-      height: ~'calc(100% - 2 * @{modal-v-margin})';
+      // There is a bug in YUI CSS Compiler which makes is so that 2 * 0px is transformed into 2 * 0 which is invalid
+      // CSS. Therefore, as long as we keep modal-v-margin-xs == 0, we manually compute the height as 100%.
+      // height: ~'calc(100% - 2 * @{modal-v-margin-xs})';
+      height: 100%;
     }
 
+    height: ~'calc(100% - 2 * @{modal-v-margin})';
+
     .modal-content {
-      /*min-height: 100%;*/
       height: 100%;
+      overflow: hidden;
       background-color: transparent;
       .box-shadow(none);
       border: none;
 
-      padding-top: 56px; // font size h4 18 * line height 1.42857143 + padding 15 + 15
-      padding-bottom: 64px; // font size normal 14 * line height 1.42857143 + padding 15 + 15
+      // font size h4 18 * line height 1.42857143 + padding 15 + 15
+      //padding-top: 56px;
+      padding-top: round(@font-size-h4 * @line-height-base + @modal-title-padding * 2);
+
+      // font size normal 14 * line height 1.42857143 + padding 15 + 15 + btn padding 6 * 2 + btn border 1 * 2
+      //padding-bottom: 64px;
+      padding-bottom: round(@font-size-base * @line-height-base + @modal-inner-padding * 2 + @padding-base-vertical * 2 + 2px);
 
       .modal-header {
         position: absolute;
@@ -78,52 +71,14 @@
       }
 
       .modal-body {
-        //height: 100%;
         max-height: 100%;
         overflow-y: auto;
       }
-
-      // Pretty good
-      /*.modal-footer {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-      }*/
     }
   }
 }
 
-//
-
-/*.ngb-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  overflow: auto;
-
-  .ngb-modal-overlay {
-    background-color: @body-bg;
-    opacity: 0.5;
-  }
-}
-
-.ngb-has-modal {
-  & > * {
-    .transition-filter(100ms linear);
-    .filter(blur(10px));
-  }
-  & > .ngb-modal {
-    .filter(none);
-  }
-}*/
-
-
-
 // Modal background
-// GOOD
 .modal-backdrop {
   position: fixed;
   top: 0;
@@ -136,205 +91,20 @@
   &.fade { .opacity(0); }
   &.in { .opacity(1); }
 }
-.ngb-modal-open {
-  .modal-backdrop.fade.in {
-    .opacity(@modal-backdrop-opacity);
-  }
-}
 
-.ngb-modal-open-blur {
-  & > * {
-    /*.filter(blur(5px));
-    .translate3d(0; 0; 0);*/
-    /*filter:url(#wherearemyglasses);
-    !* ^ for Firefox *!
-    -webkit-filter: blur(1px);
-    !* ^ Webkit browsers *!
-    filter: blur(1px);*/
-  }
-  & > .modal,
-  & > .modal-backdrop {
-    /*.filter(none);
-    .translate3d(0; 0; 0);*/
-    /*filter:none;
-    !* ^ for Firefox *!
-    -webkit-filter: none;
-    !* ^ Webkit browsers *!
-    filter: none;*/
-  }
-}
-
-//
-// Modals
-// --------------------------------------------------
-
-// .modal-open      - body class for killing the scroll
-// .modal           - container to scroll within
-// .modal-dialog    - positioning shell for the actual modal
-// .modal-content   - actual modal w/ bg and corners and shit
-/*
-
-// Kill the scroll on the body
-.modal-open {
-  overflow: hidden;
-  & > * {
-    .filter(blur(10px));
-  }
-  & > .modal,
-  & > .modal-backdrop {
-    .filter(none);
-  }
-}
-
-// Container that the modal scrolls within
-
-.modal {
-  display: none;
-  overflow: hidden;
-  position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  z-index: @zindex-modal;
-  -webkit-overflow-scrolling: touch;
-
-  // Prevent Chrome on Windows from adding a focus outline. For details, see
-  // https://github.com/twbs/bootstrap/pull/10951.
-  outline: 0;
-
-  // When fading in the modal, animate it to slide down
-  &.fade .modal-dialog {
-        -ms-transform: none; !* IE 9 *!
-    -webkit-transform: none; !* Chrome, Safari, Opera *!
-            transform: none;
-    .transition-transform(none);
-  }
-  &.in .modal-dialog { .translate(0, 0) }
-}
-*/
-.modal-open .modal {
-  overflow-x: hidden;
-  overflow-y: auto;
-
-  /*-webkit-perspective: 1000;
-          perspective: 1000;
-
-
-  -webkit-backface-visibility: hidden;
-          backface-visibility: hidden;
-
-  -webkit-transform: translate3d(0,0,0);
-          transform: translate3d(0,0,0);
-
-  -webkit-transform: translateZ(0);
-          transform: translateZ(0);*/
-}
-/*
-// Shell div to position the modal with bottom padding
-.modal-dialog {
-  position: relative;
-  width: auto;
-  margin: 10px;
-}
-
-// Actual modal
-.modal-content {
-  position: relative;
-  background-color: transparent;
-  border: none;
-
-  .box-shadow(none);
-  background-clip: padding-box;
-  // Remove focus outline from opened modal
-  outline: 0;
-}
-
-// Modal background
-.modal-backdrop {
-  position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  z-index: @zindex-modal-background;
-  background-color: @modal-backdrop-bg;
-  // Fade for backdrop
-  &.fade { .opacity(0); }
-  &.in { .opacity(@modal-backdrop-opacity); }
-}
-
-// Modal header
-// Top section of the modal w/ title and dismiss
-.modal-header {
-  padding: @modal-title-padding;
-  border-bottom: 1px solid @modal-header-border-color;
-  !* TODO: Weird behavior for this: *!
-  !*&:extend(.clearfix all);*!
-}
-// Close icon
-.modal-header .close {
-  margin-top: -2px;
-}
-
-// Title text within header
-.modal-title {
-  margin: 0;
-  line-height: @modal-title-line-height;
-}
-
-// Modal body
-// Where all modal content resides (sibling of .modal-header and .modal-footer)
-.modal-body {
-  position: relative;
-  padding: @modal-inner-padding;
-}
-
-// Footer (for actions)
-.modal-footer {
-  padding: @modal-inner-padding;
-  text-align: right; // right align buttons
-  border-top: 1px solid @modal-footer-border-color;
-  !* TODO: Weird behavior *!
-  !*&:extend(.clearfix all);*! // clear it in case folks use .pull-* classes on buttons
-
-  // Properly space out buttons
-  .btn + .btn {
-    margin-left: 5px;
-    margin-bottom: 0; // account for input[type="submit"] which gets the bottom margin like all other inputs
-  }
-  // but override that for button groups
-  .btn-group .btn + .btn {
-    margin-left: -1px;
-  }
-  // and override it for block buttons as well
-  .btn-block + .btn-block {
-    margin-left: 0;
-  }
-}
-
-// Measure scrollbar width for padding body during modal show/hide
-.modal-scrollbar-measure {
-  position: absolute;
-  top: -9999px;
-  width: 50px;
-  height: 50px;
-  overflow: scroll;
-}
-
-// Scale up the modal
 @media (min-width: @screen-sm-min) {
-  // Automatically set modal's width for larger viewports
-  .modal-dialog {
-    width: @modal-md;
-    margin: 30px auto;
+  .ngb-modal-open {
+    .modal-backdrop.fade.in {
+      .opacity(@modal-backdrop-opacity);
+    }
   }
-
-  // Modal sizes
-  .modal-sm { width: @modal-sm; }
+  .ngb-modal-open-blur {
+    & > * {
+      .filter(blur(5px));
+    }
+    & > .modal,
+    & > .modal-backdrop {
+      .filter(none);
+    }
+  }
 }
-
-@media (min-width: @screen-md-min) {
-  .modal-lg { width: @modal-lg; }
-}
-*/
