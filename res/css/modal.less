@@ -28,51 +28,79 @@
 }
 
 .ngb-modal.modal {
-  height: 100%;
+
+  &.ngb-modal-fixed {
+    height: 100%;
+
+    .modal-dialog {
+      @media (max-width: @screen-xs-max) {
+        // There is a bug in YUI CSS Compiler which makes is so that 2 * 0px is transformed into 2 * 0 which is invalid
+        // CSS. Therefore, as long as we keep modal-v-margin-xs == 0, we manually compute the height as 100%.
+        // height: ~'calc(100% - 2 * @{modal-v-margin-xs})';
+        height: 100%;
+      }
+
+      height: ~'calc(100% - 2 * @{modal-v-margin})';
+
+      .modal-content {
+        height: 100%;
+        overflow: hidden;
+
+        // font size h4 18 * line height 1.42857143 + padding 15 + 15 + border 1
+        //padding-top: 56px;
+        //padding-top: round(@font-size-h4 * @line-height-base + @modal-title-padding * 2 + 1);
+
+        // font size normal 14 * line height 1.42857143 + padding 15 + 15 + btn padding 6 * 2 + btn border 1 * 2
+        //padding-bottom: 64px;
+        //padding-bottom: round(@font-size-base * @line-height-base + @modal-inner-padding * 2 + @padding-base-vertical * 2 + 2px);
+
+        .modal-header {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+        }
+
+        .modal-body {
+          max-height: 100%;
+          overflow-y: auto;
+        }
+
+        .modal-footer {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          width: 100%;
+        }
+      }
+    }
+  }
+
   -webkit-overflow-scrolling: touch; // so that momentum is added to scroll on iOS
 
   .modal-dialog {
 
     @media (max-width: @screen-xs-max) {
       margin: @modal-v-margin-xs;
-
-      // There is a bug in YUI CSS Compiler which makes is so that 2 * 0px is transformed into 2 * 0 which is invalid
-      // CSS. Therefore, as long as we keep modal-v-margin-xs == 0, we manually compute the height as 100%.
-      // height: ~'calc(100% - 2 * @{modal-v-margin-xs})';
-      height: 100%;
     }
 
-    height: ~'calc(100% - 2 * @{modal-v-margin})';
-
     .modal-content {
-      height: 100%;
-      overflow: hidden;
       background-color: transparent;
       .box-shadow(none);
       border: none;
 
-      // font size h4 18 * line height 1.42857143 + padding 15 + 15 + border 1
-      //padding-top: 56px;
-      padding-top: round(@font-size-h4 * @line-height-base + @modal-title-padding * 2 + 1);
-
-      // font size normal 14 * line height 1.42857143 + padding 15 + 15 + btn padding 6 * 2 + btn border 1 * 2
-      //padding-bottom: 64px;
-      padding-bottom: round(@font-size-base * @line-height-base + @modal-inner-padding * 2 + @padding-base-vertical * 2 + 2px);
-
-      .modal-header {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-      }
-
-      .modal-body {
-        max-height: 100%;
-        overflow-y: auto;
+      .ngb-modal-input-text {
+        height: @input-height-base;
+        /*width: ~'calc(100% - 2 * @{padding-base-horizontal} - 15px)';*/
+        /*float: left;*/
+        line-height: @line-height-large;
+        max-height: 100px;
+        resize: none;
       }
     }
   }
 }
+
 
 // Modal background
 .modal-backdrop {

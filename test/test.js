@@ -10,6 +10,11 @@ goog.require('ngb.test.MainController');
 
 ngb.test.App = angular.module('ngb.test.App', ['ngb']);
 
-ngb.test.App.controller('ngb.test.MainController', ['$scope', '$ngbModal', function() {
+ngb.test.App.controller('ngb.test.MainController', ['$scope', '$ngbModal', '$templateCache', function() {
   return u.reflection.applyConstructor(ngb.test.MainController, arguments);
 }]);
+
+ngb.test.App.controller('ngb.test.MyModalController', ['$scope', '$uibModalInstance', '$ngbAnimation', 'bodyTemplateUrl', 'options', function() {
+  return u.reflection.applyConstructor(/** @type {function(new: ngu.Controller)} */ (ngb.test.MyModalController), arguments);
+}]);
+

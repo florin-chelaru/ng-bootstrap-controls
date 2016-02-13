@@ -49,37 +49,57 @@
   height: 100%;
 }
 .ngb-modal.modal {
-  height: 100%;
   -webkit-overflow-scrolling: touch;
 }
-.ngb-modal.modal .modal-dialog {
+.ngb-modal.modal.ngb-modal-fixed {
+  height: 100%;
+}
+.ngb-modal.modal.ngb-modal-fixed .modal-dialog {
   height: calc(100% - 2 * 30px);
 }
 @media (max-width: 767px) {
-  .ngb-modal.modal .modal-dialog {
-    margin: 0px;
+  .ngb-modal.modal.ngb-modal-fixed .modal-dialog {
     height: 100%;
   }
 }
-.ngb-modal.modal .modal-dialog .modal-content {
+.ngb-modal.modal.ngb-modal-fixed .modal-dialog .modal-content {
   height: 100%;
   overflow: hidden;
-  background-color: transparent;
-  -webkit-box-shadow: none;
-  box-shadow: none;
-  border: none;
-  padding-top: 56px;
-  padding-bottom: 64px;
 }
-.ngb-modal.modal .modal-dialog .modal-content .modal-header {
+.ngb-modal.modal.ngb-modal-fixed .modal-dialog .modal-content .modal-header {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
 }
-.ngb-modal.modal .modal-dialog .modal-content .modal-body {
+.ngb-modal.modal.ngb-modal-fixed .modal-dialog .modal-content .modal-body {
   max-height: 100%;
   overflow-y: auto;
+}
+.ngb-modal.modal.ngb-modal-fixed .modal-dialog .modal-content .modal-footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+}
+@media (max-width: 767px) {
+  .ngb-modal.modal .modal-dialog {
+    margin: 0px;
+  }
+}
+.ngb-modal.modal .modal-dialog .modal-content {
+  background-color: transparent;
+  -webkit-box-shadow: none;
+  box-shadow: none;
+  border: none;
+}
+.ngb-modal.modal .modal-dialog .modal-content .ngb-modal-input-text {
+  height: 34px;
+  /*width: ~'calc(100% - 2 * @{padding-base-horizontal} - 15px)';*/
+  /*float: left;*/
+  line-height: 1.3333333;
+  max-height: 100px;
+  resize: none;
 }
 .modal-backdrop {
   position: fixed;

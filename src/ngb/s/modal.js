@@ -70,6 +70,22 @@ ngb.s.Modal = function(provider, $uibModal, $q, $templateCache) {
     '</div>');
 
   $templateCache.put('ngb/template/modal/content.html', '<div class="ngb-patient-modal"></div>');
+
+  $templateCache.put('ngb/template/modal/header.html',
+    '<button type="button" class="close" ng-click="close()" aria-hidden="true">×</button>' +
+    '<h4 class="modal-title">{{ title }}</h4>');
+
+  $templateCache.put('ngb/template/modal/footer-buttons.html',
+    '<button ng-repeat="(btnLabel, btnFunc) in footerButtons" ' +
+    'type="button" class="btn" ng-class="$index == 0 ? \'btn-primary\' : \'btn-default\'" ' +
+    'ng-click="btnFunc()">{{ btnLabel }}</button>');
+
+  $templateCache.put('ngb/template/modal/footer-input-text.html',
+    '<form role="form" class="input-group">' +
+      '<textarea class="form-control ngb-modal-input-text" ng-keyup="adjustHeight($event)" ng-model="$parent.inputText"></textarea>' +
+      '<span class="btn btn-primary input-group-addon" ng-click="sendMessage()"><span class="fa fa-chevron-right"></span></span>' +
+    '</form>'
+  );
 };
 
 goog.inherits(ngb.s.Modal, ngu.ProviderService);
@@ -78,10 +94,12 @@ goog.inherits(ngb.s.Modal, ngu.ProviderService);
  * @param {{animation: (boolean|undefined), appendTo: (jQuery|undefined), backdrop: (boolean|string|undefined),
  *   backdropClass: (string|undefined), bindToController: (boolean|undefined),
  *   controller: (Function|string|Array|undefined), controllerAs: (string|undefined), keyboard: (boolean|undefined),
- *   openedClass: (string|undefined), resolve: (Object|undefined), $scope: angular.Scope, size: (string|undefined),
+ *   openedClass: (string|undefined), resolve: (Object|undefined), $scope: (angular.Scope|undefined), size: (string|undefined),
  *   template: (string|undefined), templateUrl: (string|undefined), windowClass: (string|undefined),
  *   windowTemplateUrl: (string|undefined), windowTopClass: (string|undefined),
- *   contentTemplateUrl: string, title: (string|undefined), loaderClass: (string|undefined)
+ *   bodyTemplateUrl: string, title: (string|undefined), loaderClass: (string|undefined), fixed: (boolean|undefined),
+ *   useFooterInputText: (boolean|undefined), sendMessage: (Function|undefined),
+ *   headerTemplateUrl: (string|undefined), footerTemplateUrl: (string|undefined)
  * }} [modalOptions]
  * @returns {{result: angular.$q.Promise, opened: angular.$q.Promise, closed: angular.$q.Promise, rendered: angular.$q.Promise, close: Function, dismiss: Function}}
  */
@@ -100,13 +118,25 @@ ngb.s.Modal.prototype.open = function(modalOptions) {
   options['windowTemplateUrl'] = 'ngb/template/modal/window.html';
   options['controller'] = options['controller'] || 'ngb.s.ModalController';
 
+  if (options['fixed']) {
+    options['windowTopClass'] = (options['windowTopClass'] || '') + ' ngb-modal-fixed';
+  }
+
   var $ngbAnimation = $q.defer();
   if (!animation) { $ngbAnimation.resolve(); }
   options['resolve'] = u.extend({}, {
     '$ngbAnimation': function() { return $ngbAnimation; },
-    'contentTemplateUrl': function() { return options['contentTemplateUrl']; },
-    'title': function() { return options['title'] || 'Modal title'; },
-    'loaderClass': function() { return options['loaderClass'] || 'timer-loader'; }
+    'bodyTemplateUrl': function() { return options['bodyTemplateUrl']; },
+    'options': function() {
+      return {
+        'headerTemplateUrl': options['headerTemplateUrl'] || 'ngb/template/modal/header.html',
+        'footerTemplateUrl': options['footerTemplateUrl'] ||
+        (options['useFooterInputText'] ? 'ngb/template/modal/footer-input-text.html' : 'ngb/template/modal/footer-buttons.html'),
+        'title': options['title'] || 'Modal title',
+        'loaderClass': options['loaderClass'] || 'timer-loader',
+        'sendMessage': options['sendMessage']
+      };
+    }
   }, options['resolve'] || {});
 
   return this._$uibModal['open'](options);
@@ -116,13 +146,12 @@ ngb.s.Modal.prototype.open = function(modalOptions) {
  * @param {angular.Scope} $scope
  * @param {{result: angular.$q.Promise, opened: angular.$q.Promise, closed: angular.$q.Promise, rendered: angular.$q.Promise, close: Function, dismiss: Function}} $uibModalInstance
  * @param {angular.$q.Deferred} $ngbAnimation
- * @param {string} contentTemplateUrl
- * @param {string} title
- * @param {string} loaderClass
+ * @param {string} bodyTemplateUrl
+ * @param {{headerTemplateUrl: string, footerTemplateUrl: string, title: string, loaderClass: string, sendMessage: (Function|undefined)}} options
  * @constructor
  * @extends {ngu.Controller}
  */
-ngb.s.ModalController = function($scope, $uibModalInstance, $ngbAnimation, contentTemplateUrl, title, loaderClass) {
+ngb.s.ModalController = function($scope, $uibModalInstance, $ngbAnimation, bodyTemplateUrl, options) {
   ngu.Controller.apply(this, arguments);
 
   /**
@@ -141,16 +170,23 @@ ngb.s.ModalController = function($scope, $uibModalInstance, $ngbAnimation, conte
    * @type {string}
    * @private
    */
-  this._contentTemplateUrl = contentTemplateUrl;
+  this._bodyTemplateUrl = bodyTemplateUrl;
 
   $scope['$ngbAnimation'] = $ngbAnimation;
-  $scope['contentTemplateUrl'] = contentTemplateUrl;
-  $scope['title'] = title;
-  $scope['loaderClass'] = loaderClass;
+  $scope['bodyTemplateUrl'] = bodyTemplateUrl;
+  $scope['title'] = options.title;
+  $scope['loaderClass'] = options.loaderClass;
+  $scope['headerTemplateUrl'] = options.headerTemplateUrl;
+  $scope['footerTemplateUrl'] = options.footerTemplateUrl;
 
   var self = this;
   $scope['close'] = function() { self.close(); };
   $scope['footerButtons'] = this['footerButtons'];
+  $scope['adjustHeight'] = function($event) {
+    $event.target.style.height = (2 + $event.target.scrollHeight) + 'px';
+  };
+  $scope['inputText'] = '';
+  $scope['sendMessage'] = function() { if (options['sendMessage']) { options['sendMessage']($scope['inputText']); }};
 };
 
 goog.inherits(ngb.s.ModalController, ngu.Controller);
@@ -169,9 +205,9 @@ ngb.s.ModalController.prototype.$ngbAnimation;
 
 /**
  * @type {string}
- * @name ngb.s.ModalController#contentTemplateUrl
+ * @name ngb.s.ModalController#bodyTemplateUrl
  */
-ngb.s.ModalController.prototype.contentTemplateUrl;
+ngb.s.ModalController.prototype.bodyTemplateUrl;
 
 /**
  * @type {Object.<string, Function>}
@@ -190,9 +226,9 @@ Object.defineProperties(ngb.s.ModalController.prototype, {
       return this._$ngbAnimation;
     })
   },
-  'contentTemplateUrl': {
+  'bodyTemplateUrl': {
     get: /** @type {function (this:ngb.s.ModalController)} */ (function () {
-      return this._contentTemplateUrl;
+      return this._bodyTemplateUrl;
     })
   },
   'footerButtons': {

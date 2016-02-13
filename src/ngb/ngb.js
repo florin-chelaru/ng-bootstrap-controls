@@ -25,6 +25,6 @@ ngb.main.provider('$ngbModal', function() {
   return new ngb.s.ModalProvider(/** @type {function(new: ngu.ProviderService)} */ (ngb.s.Modal), ['$uibModal', '$q', '$templateCache']);
 });
 
-ngb.main.controller('ngb.s.ModalController', ['$scope', '$uibModalInstance', '$ngbAnimation', 'contentTemplateUrl', 'title', 'loaderClass', function() {
+ngb.main.controller('ngb.s.ModalController', ['$scope', '$uibModalInstance', '$ngbAnimation', 'bodyTemplateUrl', 'options', function() {
   return u.reflection.applyConstructor(/** @type {function(new: ngu.Controller)} */ (ngb.s.ModalController), arguments);
 }]);

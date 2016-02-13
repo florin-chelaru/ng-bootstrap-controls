@@ -11,10 +11,11 @@ goog.require('ngu.Controller');
 /**
  * @param {angular.Scope} $scope Angular scope
  * @param {ngb.s.Modal} $ngbModal
+ * @param {angular.$templateCache} $templateCache
  * @constructor
  * @extends {ngu.Controller}
  */
-ngb.test.MainController = function ($scope, $ngbModal) {
+ngb.test.MainController = function ($scope, $ngbModal, $templateCache) {
   ngu.Controller.apply(this, arguments);
 
   /**
@@ -93,6 +94,11 @@ ngb.test.MainController = function ($scope, $ngbModal) {
    * @private
    */
   this._title = 'Countries';
+
+  $templateCache.put('ngb/test/modal/footer.html',
+    '<textarea class="form-control" style="width: calc(100% - 40px); float: left; line-height: 1.2; max-height: 100px;" ng-keyup="adjustHeight($event)" />' +
+    '<button class="btn btn-primary"><span class="fa fa-chevron-right"></span></button>'
+  );
 };
 
 goog.inherits(ngb.test.MainController, ngu.Controller);
@@ -226,10 +232,13 @@ ngb.test.MainController.prototype.showModal = function() {
   });
 */
   var modalInstance = this._$modal.open({
-    //'contentTemplateUrl': '../res/html/_login.html',
-    'contentTemplateUrl': '../res/html/_large-content2.php',
+    //'bodyTemplateUrl': '../res/html/_login.html',
+    'bodyTemplateUrl': '../res/html/_large-content2.php',
     'title': 'Some title',
-    'loaderClass': 'timer-loader'
+    'loaderClass': 'timer-loader',
+    'fixed': false,
+    'useFooterInputText': true,
+    'sendMessage': function(message) { alert(message); }
   });
   modalInstance.result.then(function (selectedItem) {
     //$scope.selected = selectedItem;
@@ -240,3 +249,18 @@ ngb.test.MainController.prototype.showModal = function() {
 
 
 };
+
+/**
+ * @constructor
+ * @extends {ngb.s.ModalController}
+ */
+ngb.test.MyModalController = function() {
+  ngb.s.ModalController.apply(this, arguments);
+
+  this.$scope.adjustHeight = function($event) {
+    $event.target.style.height = (2 + $event.target.scrollHeight) + 'px';
+    //o.style.height = (25+o.scrollHeight)+"px";
+  }
+};
+
+goog.inherits(ngb.test.MyModalController, ngb.s.ModalController);

@@ -29,16 +29,11 @@ ngb.d.PatientModal['options'] = {
     '<div class="ngb-modal-overlay">' +
       '<div class="ngb-loader" ng-class="loaderClass || \'\'"></div>' +
     '</div>' +
-    '<div class="modal-header">' +
-      '<button type="button" class="close" ng-click="close()" aria-hidden="true">×</button>' +
-      '<h4 class="modal-title">{{ title }}</h4>' +
+    '<div class="modal-header" ng-include="headerTemplateUrl" onload="headerLoaded()">' +
     '</div>' +
     '<div class="modal-body">' +
     '</div>' +
-    '<div class="modal-footer">' +
-      '<button ng-repeat="(btnLabel, btnFunc) in footerButtons" ' +
-              'type="button" class="btn" ng-class="$index == 0 ? \'btn-primary\' : \'btn-default\'" ' +
-              'ng-click="btnFunc()">{{ btnLabel }}</button>' +
+    '<div class="modal-footer" ng-include="footerTemplateUrl" onload="footerLoaded()">' +
     '</div>'
 };
 
@@ -50,6 +45,7 @@ ngb.d.PatientModal['options'] = {
  */
 ngb.d.PatientModal.prototype.link = function ($scope, $element, $attrs) {
   var $body = $('body');
+  var $modalContent = $element.parent();
 
   $body.removeClass('ngb-modal-open');
 
@@ -59,7 +55,7 @@ ngb.d.PatientModal.prototype.link = function ($scope, $element, $attrs) {
     $body.removeClass('ngb-modal-open-blur');
   });
 
-  $scope['contentLoaded'] = function() {
+  $scope['bodyLoaded'] = function() {
     var $overlay = $element.find('.ngb-modal-overlay');
     $overlay.one('transitionend', function() {
       $overlay.css('display', 'none');
@@ -68,10 +64,26 @@ ngb.d.PatientModal.prototype.link = function ($scope, $element, $attrs) {
     $body.addClass('ngb-modal-open');
   };
 
+  $scope['headerLoaded'] = function() {
+    var $modalHeader = $element.find('.modal-header');
+    $scope.$watch(function() { return $modalHeader.outerHeight(); },
+      function(value, oldValue) {
+        $modalContent.css('padding-top', value);
+      });
+  };
+
+  $scope['footerLoaded'] = function() {
+    var $modalFooter = $element.find('.modal-footer');
+    $scope.$watch(function() { return $modalFooter.outerHeight(); },
+      function(value, oldValue) {
+        $modalContent.css('padding-bottom', value);
+      });
+  };
+
   $scope['$ngbAnimation'].promise.then(function() {
     $body.addClass('ngb-modal-open-blur');
 
-    var ngContent = angular.element('<div ng-include="contentTemplateUrl" onload="contentLoaded()"></div>');
+    var ngContent = angular.element('<div ng-include="bodyTemplateUrl" onload="bodyLoaded()"></div>');
     /** @type {!angular.JQLite|jQuery} */
     var $content = ($compile(ngContent)(/** @type {!angular.Scope} */($scope)));
 
