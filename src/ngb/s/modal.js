@@ -82,7 +82,7 @@ ngb.s.Modal = function(provider, $uibModal, $q, $templateCache) {
 
   $templateCache.put('ngb/template/modal/footer-input-text.html',
     '<form role="form" class="input-group">' +
-      '<textarea class="form-control ngb-modal-input-text" ng-keyup="adjustHeight($event)" ng-model="$parent.inputText"></textarea>' +
+      '<textarea class="form-control ngb-modal-input-text" ng-keyup="adjustHeight($event)" ng-model="$parent.inputText" placeholder="Write an answer..."></textarea>' +
       '<span class="btn btn-primary input-group-addon" ng-click="sendMessage()"><span class="fa fa-chevron-right"></span></span>' +
       // The one below doesn't stretch the button to the height of the text area:
       /*'<span class="input-group-btn" >' +
