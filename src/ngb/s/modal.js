@@ -192,7 +192,13 @@ ngb.s.ModalController = function($scope, $uibModalInstance, $ngbAnimation, bodyT
     t.style.height = (parseFloat($t.css('border-top-width')) + parseFloat($t.css('border-bottom-width')) + t.scrollHeight) + 'px';
   };
   $scope['inputText'] = '';
-  $scope['sendMessage'] = function() { if (options['sendMessage']) { options['sendMessage']($scope['inputText']); }};
+  $scope['sendMessage'] = function() {
+    if (options['sendMessage']) {
+      var message = $scope['inputText'];
+      $scope['inputText'] = '';
+      options['sendMessage'](message);
+    }
+  };
 };
 
 goog.inherits(ngb.s.ModalController, ngu.Controller);
