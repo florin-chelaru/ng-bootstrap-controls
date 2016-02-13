@@ -188,7 +188,9 @@ ngb.s.Modal = function(provider, $uibModal, $q, $templateCache) {
   $templateCache.put('ngb/template/modal/footer-input-text.html',
     '<form role="form" class="input-group">' +
       '<textarea class="form-control ngb-modal-input-text" ng-keyup="adjustHeight($event)" ng-model="$parent.inputText"></textarea>' +
-      '<span class="btn btn-primary input-group-addon" ng-click="sendMessage()"><span class="fa fa-chevron-right"></span></span>' +
+      '<span class="input-group-btn" >' +
+        '<button class="btn btn-primary" ng-click="sendMessage()"><span class="fa fa-chevron-right"></span></button>' +
+      '</span>' +
     '</form>'
   );
 };
