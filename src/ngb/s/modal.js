@@ -183,7 +183,9 @@ ngb.s.ModalController = function($scope, $uibModalInstance, $ngbAnimation, bodyT
   $scope['close'] = function() { self.close(); };
   $scope['footerButtons'] = this['footerButtons'];
   $scope['adjustHeight'] = function($event) {
-    $event.target.style.height = (2 + $event.target.scrollHeight) + 'px';
+    var t = $event.target;
+    var $t = $(t);
+    t.style.height = (parseFloat($t.css('border-top-width')) + parseFloat($t.css('border-bottom-width')) + t.scrollHeight) + 'px';
   };
   $scope['inputText'] = '';
   $scope['sendMessage'] = function() { if (options['sendMessage']) { options['sendMessage']($scope['inputText']); }};
