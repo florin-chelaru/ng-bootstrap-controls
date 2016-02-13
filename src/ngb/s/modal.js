@@ -178,10 +178,10 @@ ngb.s.ModalController = function($scope, $uibModalInstance, $ngbAnimation, bodyT
 
   $scope['$ngbAnimation'] = $ngbAnimation;
   $scope['bodyTemplateUrl'] = bodyTemplateUrl;
-  $scope['title'] = options.title;
-  $scope['loaderClass'] = options.loaderClass;
-  $scope['headerTemplateUrl'] = options.headerTemplateUrl;
-  $scope['footerTemplateUrl'] = options.footerTemplateUrl;
+  $scope['title'] = options['title'];
+  $scope['loaderClass'] = options['loaderClass'];
+  $scope['headerTemplateUrl'] = options['headerTemplateUrl'];
+  $scope['footerTemplateUrl'] = options['footerTemplateUrl'];
 
   var self = this;
   $scope['close'] = function() { self.close(); };
