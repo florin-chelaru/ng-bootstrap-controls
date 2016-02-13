@@ -138,7 +138,8 @@ ngb.s.Modal.prototype.open = function(modalOptions) {
         (options['useFooterInputText'] ? 'ngb/template/modal/footer-input-text.html' : 'ngb/template/modal/footer-buttons.html'),
         'title': options['title'] || 'Modal title',
         'loaderClass': options['loaderClass'] || 'timer-loader',
-        'sendMessage': options['sendMessage']
+        'sendMessage': options['sendMessage'],
+        'fixed': !!options['fixed']
       };
     }
   }, options['resolve'] || {});
@@ -151,7 +152,7 @@ ngb.s.Modal.prototype.open = function(modalOptions) {
  * @param {{result: angular.$q.Promise, opened: angular.$q.Promise, closed: angular.$q.Promise, rendered: angular.$q.Promise, close: Function, dismiss: Function}} $uibModalInstance
  * @param {angular.$q.Deferred} $ngbAnimation
  * @param {string} bodyTemplateUrl
- * @param {{headerTemplateUrl: string, footerTemplateUrl: string, title: string, loaderClass: string, sendMessage: (Function|undefined)}} options
+ * @param {{headerTemplateUrl: string, footerTemplateUrl: string, title: string, loaderClass: string, sendMessage: (Function|undefined), fixed: boolean}} options
  * @constructor
  * @extends {ngu.Controller}
  */
@@ -182,6 +183,7 @@ ngb.s.ModalController = function($scope, $uibModalInstance, $ngbAnimation, bodyT
   $scope['loaderClass'] = options['loaderClass'];
   $scope['headerTemplateUrl'] = options['headerTemplateUrl'];
   $scope['footerTemplateUrl'] = options['footerTemplateUrl'];
+  $scope['fixed'] = options['fixed'];
 
   var self = this;
   $scope['close'] = function() { self.close(); };

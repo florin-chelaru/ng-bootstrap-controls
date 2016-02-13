@@ -64,21 +64,27 @@ ngb.d.PatientModal.prototype.link = function ($scope, $element, $attrs) {
     $body.addClass('ngb-modal-open');
   };
 
-  $scope['headerLoaded'] = function() {
-    var $modalHeader = $element.find('.modal-header');
-    $scope.$watch(function() { return $modalHeader.outerHeight(); },
-      function(value, oldValue) {
-        $modalContent.css('padding-top', value);
-      });
-  };
+  if ($scope['fixed']) {
+    $scope['headerLoaded'] = function () {
+      var $modalHeader = $element.find('.modal-header');
+      $scope.$watch(function () {
+          return $modalHeader.outerHeight();
+        },
+        function (value, oldValue) {
+          $modalContent.css('padding-top', value);
+        });
+    };
 
-  $scope['footerLoaded'] = function() {
-    var $modalFooter = $element.find('.modal-footer');
-    $scope.$watch(function() { return $modalFooter.outerHeight(); },
-      function(value, oldValue) {
-        $modalContent.css('padding-bottom', value);
-      });
-  };
+    $scope['footerLoaded'] = function () {
+      var $modalFooter = $element.find('.modal-footer');
+      $scope.$watch(function () {
+          return $modalFooter.outerHeight();
+        },
+        function (value, oldValue) {
+          $modalContent.css('padding-bottom', value);
+        });
+    };
+  }
 
   $scope['$ngbAnimation'].promise.then(function() {
     $body.addClass('ngb-modal-open-blur');

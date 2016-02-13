@@ -18,6 +18,103 @@
 */
 
 
+goog.provide('ngb.d.PatientModal');
+
+/**
+ * @param {angular.Scope} $scope
+ * @param {angular.$compile} $compile
+ * @constructor
+ * @extends {ngu.Directive}
+ */
+ngb.d.PatientModal = function ($scope, $compile) {
+  ngu.Directive.apply(this, arguments);
+
+  /**
+   * @type {angular.$compile}
+   * @private
+   */
+  this._$compile = $compile;
+};
+
+goog.inherits(ngb.d.PatientModal, ngu.Directive);
+
+ngb.d.PatientModal['options'] = {
+  'template':
+    '<div class="ngb-modal-overlay">' +
+      '<div class="ngb-loader" ng-class="loaderClass || \'\'"></div>' +
+    '</div>' +
+    '<div class="modal-header" ng-include="headerTemplateUrl" onload="headerLoaded()">' +
+    '</div>' +
+    '<div class="modal-body">' +
+    '</div>' +
+    '<div class="modal-footer" ng-include="footerTemplateUrl" onload="footerLoaded()">' +
+    '</div>'
+};
+
+/**
+ * @param {angular.Scope} $scope
+ * @param {jQuery} $element
+ * @param {angular.Attributes} $attrs
+ * @override
+ */
+ngb.d.PatientModal.prototype.link = function ($scope, $element, $attrs) {
+  var $body = $('body');
+  var $modalContent = $element.parent();
+
+  $body.removeClass('ngb-modal-open');
+
+  var $compile = this._$compile;
+
+  $scope.$on('modal.closing', function() {
+    $body.removeClass('ngb-modal-open-blur');
+  });
+
+  $scope['bodyLoaded'] = function() {
+    var $overlay = $element.find('.ngb-modal-overlay');
+    $overlay.one('transitionend', function() {
+      $overlay.css('display', 'none');
+    });
+    $overlay.css('opacity', '0');
+    $body.addClass('ngb-modal-open');
+  };
+
+  if ($scope['fixed']) {
+    $scope['headerLoaded'] = function () {
+      var $modalHeader = $element.find('.modal-header');
+      $scope.$watch(function () {
+          return $modalHeader.outerHeight();
+        },
+        function (value, oldValue) {
+          $modalContent.css('padding-top', value);
+        });
+    };
+
+    $scope['footerLoaded'] = function () {
+      var $modalFooter = $element.find('.modal-footer');
+      $scope.$watch(function () {
+          return $modalFooter.outerHeight();
+        },
+        function (value, oldValue) {
+          $modalContent.css('padding-bottom', value);
+        });
+    };
+  }
+
+  $scope['$ngbAnimation'].promise.then(function() {
+    $body.addClass('ngb-modal-open-blur');
+
+    var ngContent = angular.element('<div ng-include="bodyTemplateUrl" onload="bodyLoaded()"></div>');
+    /** @type {!angular.JQLite|jQuery} */
+    var $content = ($compile(ngContent)(/** @type {!angular.Scope} */($scope)));
+
+    var $modalBody = $element.find('.modal-body');
+    $modalBody.append(/** @type {jQuery} */($content));
+  });
+};
+
+
+
+
 goog.provide('ngb.d.MultiselectList');
 
 /**
@@ -131,97 +228,6 @@ Object.defineProperty(ngb.d.MultiselectList, 'options', {
     };
   }
 });
-
-
-goog.provide('ngb.d.PatientModal');
-
-/**
- * @param {angular.Scope} $scope
- * @param {angular.$compile} $compile
- * @constructor
- * @extends {ngu.Directive}
- */
-ngb.d.PatientModal = function ($scope, $compile) {
-  ngu.Directive.apply(this, arguments);
-
-  /**
-   * @type {angular.$compile}
-   * @private
-   */
-  this._$compile = $compile;
-};
-
-goog.inherits(ngb.d.PatientModal, ngu.Directive);
-
-ngb.d.PatientModal['options'] = {
-  'template':
-    '<div class="ngb-modal-overlay">' +
-      '<div class="ngb-loader" ng-class="loaderClass || \'\'"></div>' +
-    '</div>' +
-    '<div class="modal-header" ng-include="headerTemplateUrl" onload="headerLoaded()">' +
-    '</div>' +
-    '<div class="modal-body">' +
-    '</div>' +
-    '<div class="modal-footer" ng-include="footerTemplateUrl" onload="footerLoaded()">' +
-    '</div>'
-};
-
-/**
- * @param {angular.Scope} $scope
- * @param {jQuery} $element
- * @param {angular.Attributes} $attrs
- * @override
- */
-ngb.d.PatientModal.prototype.link = function ($scope, $element, $attrs) {
-  var $body = $('body');
-  var $modalContent = $element.parent();
-
-  $body.removeClass('ngb-modal-open');
-
-  var $compile = this._$compile;
-
-  $scope.$on('modal.closing', function() {
-    $body.removeClass('ngb-modal-open-blur');
-  });
-
-  $scope['bodyLoaded'] = function() {
-    var $overlay = $element.find('.ngb-modal-overlay');
-    $overlay.one('transitionend', function() {
-      $overlay.css('display', 'none');
-    });
-    $overlay.css('opacity', '0');
-    $body.addClass('ngb-modal-open');
-  };
-
-  $scope['headerLoaded'] = function() {
-    var $modalHeader = $element.find('.modal-header');
-    $scope.$watch(function() { return $modalHeader.outerHeight(); },
-      function(value, oldValue) {
-        $modalContent.css('padding-top', value);
-      });
-  };
-
-  $scope['footerLoaded'] = function() {
-    var $modalFooter = $element.find('.modal-footer');
-    $scope.$watch(function() { return $modalFooter.outerHeight(); },
-      function(value, oldValue) {
-        $modalContent.css('padding-bottom', value);
-      });
-  };
-
-  $scope['$ngbAnimation'].promise.then(function() {
-    $body.addClass('ngb-modal-open-blur');
-
-    var ngContent = angular.element('<div ng-include="bodyTemplateUrl" onload="bodyLoaded()"></div>');
-    /** @type {!angular.JQLite|jQuery} */
-    var $content = ($compile(ngContent)(/** @type {!angular.Scope} */($scope)));
-
-    var $modalBody = $element.find('.modal-body');
-    $modalBody.append(/** @type {jQuery} */($content));
-  });
-};
-
-
 
 
 goog.provide('ngb.s.ModalProvider');
@@ -358,7 +364,8 @@ ngb.s.Modal.prototype.open = function(modalOptions) {
         (options['useFooterInputText'] ? 'ngb/template/modal/footer-input-text.html' : 'ngb/template/modal/footer-buttons.html'),
         'title': options['title'] || 'Modal title',
         'loaderClass': options['loaderClass'] || 'timer-loader',
-        'sendMessage': options['sendMessage']
+        'sendMessage': options['sendMessage'],
+        'fixed': !!options['fixed']
       };
     }
   }, options['resolve'] || {});
@@ -371,7 +378,7 @@ ngb.s.Modal.prototype.open = function(modalOptions) {
  * @param {{result: angular.$q.Promise, opened: angular.$q.Promise, closed: angular.$q.Promise, rendered: angular.$q.Promise, close: Function, dismiss: Function}} $uibModalInstance
  * @param {angular.$q.Deferred} $ngbAnimation
  * @param {string} bodyTemplateUrl
- * @param {{headerTemplateUrl: string, footerTemplateUrl: string, title: string, loaderClass: string, sendMessage: (Function|undefined)}} options
+ * @param {{headerTemplateUrl: string, footerTemplateUrl: string, title: string, loaderClass: string, sendMessage: (Function|undefined), fixed: boolean}} options
  * @constructor
  * @extends {ngu.Controller}
  */
@@ -402,6 +409,7 @@ ngb.s.ModalController = function($scope, $uibModalInstance, $ngbAnimation, bodyT
   $scope['loaderClass'] = options['loaderClass'];
   $scope['headerTemplateUrl'] = options['headerTemplateUrl'];
   $scope['footerTemplateUrl'] = options['footerTemplateUrl'];
+  $scope['fixed'] = options['fixed'];
 
   var self = this;
   $scope['close'] = function() { self.close(); };
