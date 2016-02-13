@@ -6,6 +6,8 @@
 
 goog.provide('ngb.d.MultiselectList');
 
+goog.require('ngu.Directive');
+
 /**
  * @param {angular.Scope} $scope
  * @param {angular.$timeout} $timeout
@@ -61,23 +63,23 @@ ngb.d.MultiselectList.prototype.link = function ($scope, $element, $attrs) {
  * @returns {boolean}
  */
 
-ngb.d.MultiselectList.prototype.isSelected = function(item) { return this.$scope['ngbSelection'][item.index]; };
+ngb.d.MultiselectList.prototype.isSelected = function(item) { return this['$scope']['ngbSelection'][item.index]; };
 
 /**
  * @param {{label:string, index:number}} item
  */
 ngb.d.MultiselectList.prototype.select = function(item) {
-  if (item.index in this.$scope['ngbSelection']) {
-    delete this.$scope['ngbSelection'][item.index];
+  if (item.index in this['$scope']['ngbSelection']) {
+    delete this['$scope']['ngbSelection'][item.index];
   } else {
-    this.$scope['ngbSelection'][item.index] = item;
+    this['$scope']['ngbSelection'][item.index] = item;
   }
 };
 
 /**
  */
 ngb.d.MultiselectList.prototype.clearSelection = function() {
-  this.$scope['ngbSelection'] = {};
+  this['$scope']['ngbSelection'] = {};
 };
 
 Object.defineProperty(ngb.d.MultiselectList, 'options', {

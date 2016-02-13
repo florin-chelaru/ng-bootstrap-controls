@@ -6,6 +6,8 @@
 
 goog.provide('ngb.d.PatientModal');
 
+goog.require('ngu.Directive');
+
 /**
  * @param {angular.Scope} $scope
  * @param {angular.$compile} $compile

@@ -9,6 +9,9 @@
             value="${rootpath}/bower_components/google-closure-library/closure/goog"/>
   <property name="closure_tp_src"
             value="${rootpath}/bower_components/google-closure-library/third_party/closure/goog"/>
+
+  <property name="ngu_src" value="${rootpath}/bower_components/ng-utils/src/ngu"/>
+
   <property name="depswriter"
             value="${rootpath}/bower_components/google-closure-library/closure/bin/build/depswriter.py"/>
   <property name="closurebuilder"
@@ -38,6 +41,7 @@
       <arg line="${closurebuilder}"/>
       <arg line="--root=&quot;${closure_src}&quot;"/>
       <arg line="--root=&quot;${closure_tp_src}&quot;"/>
+      <arg line="--root=&quot;${ngu_src}&quot;"/>
       <arg line="--root=&quot;${src}/ngb&quot;"/>
       <arg line="--namespace=&quot;ngb&quot;"/>
       <redirector outputproperty="srcfiles" errorproperty="depserr">
@@ -57,6 +61,7 @@
       <arg line="${closurebuilder}"/>
       <arg line="--root=&quot;${closure_src}&quot;"/>
       <arg line="--root=&quot;${closure_tp_src}&quot;"/>
+      <arg line="--root=&quot;${ngu_src}&quot;"/>
       <arg line="--root=&quot;${src}/ngb&quot;"/>
       <arg line="--namespace=&quot;ngb&quot;"/>
       <redirector outputproperty="libfiles" errorproperty="depserr">

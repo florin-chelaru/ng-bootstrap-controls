@@ -8,6 +8,10 @@ goog.provide('ngb.s.ModalProvider');
 goog.provide('ngb.s.Modal');
 goog.provide('ngb.s.ModalController');
 
+goog.require('ngu.Provider');
+goog.require('ngu.ProviderService');
+goog.require('ngu.Controller');
+
 goog.require('ngb.d.PatientModal');
 
 /**

@@ -6,6 +6,8 @@
 
 goog.provide('ngb');
 
+goog.require('ngu');
+
 goog.require('ngb.d.MultiselectList');
 
 goog.require('ngb.d.PatientModal');
