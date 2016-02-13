@@ -192,9 +192,16 @@ ngb.s.ModalController = function($scope, $uibModalInstance, $ngbAnimation, bodyT
   var self = this;
   $scope['close'] = function() { self.close(); };
   $scope['footerButtons'] = this['footerButtons'];
+
+  var initialHeight;
+  var textBox;
   $scope['adjustHeight'] = function($event) {
     var t = $event.target;
     var $t = $(t);
+    if (initialHeight == undefined) {
+      initialHeight = $t.outerHeight();
+      textBox = t;
+    }
     t.style.height = (parseFloat($t.css('border-top-width')) + parseFloat($t.css('border-bottom-width')) + t.scrollHeight) + 'px';
   };
   $scope['inputText'] = '';
@@ -202,6 +209,10 @@ ngb.s.ModalController = function($scope, $uibModalInstance, $ngbAnimation, bodyT
     if (options['sendMessage']) {
       var message = $scope['inputText'];
       $scope['inputText'] = '';
+      if (textBox) {
+        textBox.style.height = initialHeight + 'px';
+        textBox.value = '';
+      }
       options['sendMessage'](message);
     }
   };
