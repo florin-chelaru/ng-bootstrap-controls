@@ -68,3 +68,37 @@
     .translate3d(0; 0; 0);
   }
 }
+
+// Modal background
+.ngb-sidebar-backdrop {
+  display: none;
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: @ngb-sidebar-bg-z-index;
+  background-color: @modal-backdrop-bg;
+  // Fade for backdrop
+  &.fade { .opacity(0); }
+}
+
+.ngb-sidebar-in .ngb-sidebar-backdrop.fade {
+  .opacity(1);
+}
+
+@media (min-width: @screen-sm-min) {
+  .ngb-sidebar-in .ngb-sidebar-backdrop.fade {
+    .opacity(@modal-backdrop-opacity);
+  }
+  .ngb-sidebar-in {
+    & > * {
+      .filter(blur(5px));
+    }
+    & > .ngb-sidebar-container,
+    & > .ngb-sidebar-backdrop,
+    & > .navbar {
+      .filter(none);
+    }
+  }
+}

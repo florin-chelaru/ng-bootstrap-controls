@@ -23,13 +23,19 @@ ngb.d.HasSidebar = function ($scope, $rootScope) {
   var sidebarIn = false;
   var top;
   var $sidebarContainer;
+  var $sidebarBackdrop;
 
   var showSidebar = function() {
+    if (sidebarIn) { return; }
     if (!$sidebarContainer) {
       $sidebarContainer = $('.ngb-sidebar-container');
+      $sidebarBackdrop = $('.ngb-sidebar-backdrop');
     }
     $sidebarContainer.css('display', 'block');
-    $sidebarContainer[0].offsetWidth; // reflow for transition
+    u.reflowForTransition($sidebarContainer[0]);
+
+    $sidebarBackdrop.css('display', 'block');
+    u.reflowForTransition($sidebarBackdrop[0]);
 
     $body.addClass('ngb-sidebar-in');
     top = $body.scrollTop();
@@ -44,11 +50,16 @@ ngb.d.HasSidebar = function ($scope, $rootScope) {
   };
 
   var hideSidebar = function() {
+    if (!sidebarIn) { return; }
     if (!$sidebarContainer) {
       $sidebarContainer = $('.ngb-sidebar-container');
+      $sidebarBackdrop = $('.ngb-sidebar-backdrop');
     }
     $sidebarContainer.one('transitionend', function() {
       $sidebarContainer.css('display', '');
+    });
+    $sidebarBackdrop.one('transitionend', function() {
+      $sidebarBackdrop.css('display', '');
     });
     $body.removeClass('ngb-sidebar-in');
     $body.css('overflow-y', '');

@@ -1,7 +1,7 @@
 <div ng-include="'html/_nav.html'" ngu-include-replace></div>
-<button class="btn btn-default" ng-click="main.showModal()">Modal</button>
 <button class="btn btn-default" ng-click="$emit('sidebarToggle')">Sidebar</button>
 <div ng-controller="ngb.test.MainController as main">
+  <button class="btn btn-default" ng-click="main.showModal()">Modal</button>
   <div class="ngb-main-controller">
     <div class="ngb-multiselect-list"
          ngb-multiselect-list
