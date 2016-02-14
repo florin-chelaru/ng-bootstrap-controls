@@ -136,6 +136,7 @@
   }
 }
 .ngb-sidebar-container {
+  display: none;
   z-index: 1029;
   position: fixed;
   bottom: 0;

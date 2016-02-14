@@ -22,8 +22,15 @@ ngb.d.HasSidebar = function ($scope, $rootScope) {
   var $body = $('body');
   var sidebarIn = false;
   var top;
+  var $sidebarContainer;
 
   var showSidebar = function() {
+    if (!$sidebarContainer) {
+      $sidebarContainer = $('.ngb-sidebar-container');
+    }
+    $sidebarContainer.css('display', 'block');
+    $sidebarContainer[0].offsetWidth; // reflow for transition
+
     $body.addClass('ngb-sidebar-in');
     top = $body.scrollTop();
     var width = $body.width();
@@ -37,6 +44,12 @@ ngb.d.HasSidebar = function ($scope, $rootScope) {
   };
 
   var hideSidebar = function() {
+    if (!$sidebarContainer) {
+      $sidebarContainer = $('.ngb-sidebar-container');
+    }
+    $sidebarContainer.one('transitionend', function() {
+      $sidebarContainer.css('display', '');
+    });
     $body.removeClass('ngb-sidebar-in');
     $body.css('overflow-y', '');
     $body.css('position', '');
