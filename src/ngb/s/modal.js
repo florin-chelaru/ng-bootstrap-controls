@@ -52,12 +52,10 @@ ngb.s.Modal = function(provider, $uibModal, $q, $templateCache) {
   this._openInstances = 0;
 
   /**
-   * @type {{scrollTop: (number|null)}}
+   * @type {{scrollTop: number, $doc: jQuery}|null}
    * @private
    */
-  this._bodyStateBeforeModal = {
-    scrollTop: null
-  };
+  this._bodyStateBeforeModal = null;
 
   /**
    * @private
@@ -176,32 +174,14 @@ ngb.s.Modal.prototype.open = function(modalOptions) {
 ngb.s.Modal.prototype._disableBodyScroll = function() {
   ++this._openInstances;
   if (this._openInstances > 1) { return; }
-
-  var $body = $('body');
-  this._bodyStateBeforeModal.scrollTop = $body.scrollTop();
-  var width = $body.width();
-
-  // Optional: leave scrollbar if body already had it. Seems it's worse that way though.
-  //var hasScrollbar = $body.get(0).scrollHeight > $body.height() + parseFloat($body.css('padding-top')) + parseFloat($body.css('padding-bottom')); // 108 = 64 navbar + 44 footer
-  //$body.css('overflow-y', hasScrollbar ? 'scroll' : 'hidden'); // scroll disables the scrollbar for body, but keeps it
-
-
-  $body.css('overflow-y', 'hidden'); // scroll disables the scrollbar for body, but keeps it
-  $body.css('position', 'fixed');
-  $body.css('top', -this._bodyStateBeforeModal.scrollTop);
-  $body.css('width', width);
+  this._bodyStateBeforeModal = ngu.disableBodyScroll();
 };
 
 ngb.s.Modal.prototype._reEnableBodyScroll = function() {
   --this._openInstances;
   if (this._openInstances > 0) { return; }
-
-  var $body = $('body');
-  $body.css('overflow-y', '');
-  $body.css('position', '');
-  $body.css('top', '');
-  $body.css('width', '');
-  $body.scrollTop(this._bodyStateBeforeModal.scrollTop);
+  ngu.reEnableBodyScroll(/** @type {{scrollTop: number, $doc: jQuery}} */ (this._bodyStateBeforeModal));
+  this._bodyStateBeforeModal = null;
 };
 
 /**

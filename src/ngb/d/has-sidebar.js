@@ -25,6 +25,9 @@ ngb.d.HasSidebar = function ($scope, $rootScope) {
   var $sidebarContainer;
   var $sidebarBackdrop;
 
+  /** @type {{scrollTop: number, $doc: jQuery}|null} */
+  var bodyState = null;
+
   var showSidebar = function() {
     if (sidebarIn) { return; }
     if (!$sidebarContainer) {
@@ -38,13 +41,8 @@ ngb.d.HasSidebar = function ($scope, $rootScope) {
     u.reflowForTransition($sidebarBackdrop[0]);
 
     $body.addClass('ngb-sidebar-in');
-    top = $body.scrollTop();
-    var width = $body.width();
-    var hasScrollbar = $body.get(0).scrollHeight > $body.height() + parseFloat($body.css('padding-top')) + parseFloat($body.css('padding-bottom')); // 108 = 64 navbar + 44 footer
-    $body.css('overflow-y', hasScrollbar ? 'scroll' : 'hidden'); // scroll disables the scrollbar for body, but keeps it
-    $body.css('position', 'fixed');
-    $body.css('top', -top);
-    $body.css('width', width);
+
+    bodyState = ngu.disableBodyScroll(true);
 
     sidebarIn = true;
   };
@@ -62,11 +60,10 @@ ngb.d.HasSidebar = function ($scope, $rootScope) {
       $sidebarBackdrop.css('display', '');
     });
     $body.removeClass('ngb-sidebar-in');
-    $body.css('overflow-y', '');
-    $body.css('position', '');
-    $body.css('top', '');
-    $body.css('width', '');
-    $body.scrollTop(top);
+
+    ngu.reEnableBodyScroll(/** @type {{scrollTop: number, $doc: jQuery}} */ (bodyState));
+    bodyState = null;
+
     sidebarIn = false;
   };
 
