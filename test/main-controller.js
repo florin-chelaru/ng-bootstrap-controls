@@ -232,8 +232,8 @@ ngb.test.MainController.prototype.showModal = function() {
   });
 */
   var modalInstance = this._$modal.open({
-    //'bodyTemplateUrl': 'html/_login.html',
-    'bodyTemplateUrl': 'html/_large-content2.php',
+    'bodyTemplateUrl': 'html/_login.html',
+    //'bodyTemplateUrl': 'html/_large-content2.php',
     'title': 'Some title',
     'loaderClass': 'timer-loader',
     'fixed': false,

@@ -46,6 +46,20 @@ ngb.s.Modal = function(provider, $uibModal, $q, $templateCache) {
   ngu.ProviderService.apply(this, arguments);
 
   /**
+   * @type {number}
+   * @private
+   */
+  this._openInstances = 0;
+
+  /**
+   * @type {{scrollTop: (number|null)}}
+   * @private
+   */
+  this._bodyStateBeforeModal = {
+    scrollTop: null
+  };
+
+  /**
    * @private
    */
   this._$uibModal = $uibModal;
@@ -112,6 +126,7 @@ goog.inherits(ngb.s.Modal, ngu.ProviderService);
  * @returns {{result: angular.$q.Promise, opened: angular.$q.Promise, closed: angular.$q.Promise, rendered: angular.$q.Promise, close: Function, dismiss: Function}}
  */
 ngb.s.Modal.prototype.open = function(modalOptions) {
+  this._disableBodyScroll();
   var $q = this._$q;
 
   var options = modalOptions || {};
@@ -148,7 +163,45 @@ ngb.s.Modal.prototype.open = function(modalOptions) {
     }
   }, options['resolve'] || {});
 
-  return this._$uibModal['open'](options);
+  var $modalInstance = this._$uibModal['open'](options);
+
+  var self = this;
+  $modalInstance.closed.then(function() {
+    self._reEnableBodyScroll();
+  });
+
+  return $modalInstance;
+};
+
+ngb.s.Modal.prototype._disableBodyScroll = function() {
+  ++this._openInstances;
+  if (this._openInstances > 1) { return; }
+
+  var $body = $('body');
+  this._bodyStateBeforeModal.scrollTop = $body.scrollTop();
+  var width = $body.width();
+
+  // Optional: leave scrollbar if body already had it. Seems it's worse that way though.
+  //var hasScrollbar = $body.get(0).scrollHeight > $body.height() + parseFloat($body.css('padding-top')) + parseFloat($body.css('padding-bottom')); // 108 = 64 navbar + 44 footer
+  //$body.css('overflow-y', hasScrollbar ? 'scroll' : 'hidden'); // scroll disables the scrollbar for body, but keeps it
+
+
+  $body.css('overflow-y', 'hidden'); // scroll disables the scrollbar for body, but keeps it
+  $body.css('position', 'fixed');
+  $body.css('top', -this._bodyStateBeforeModal.scrollTop);
+  $body.css('width', width);
+};
+
+ngb.s.Modal.prototype._reEnableBodyScroll = function() {
+  --this._openInstances;
+  if (this._openInstances > 0) { return; }
+
+  var $body = $('body');
+  $body.css('overflow-y', '');
+  $body.css('position', '');
+  $body.css('top', '');
+  $body.css('width', '');
+  $body.scrollTop(this._bodyStateBeforeModal.scrollTop);
 };
 
 /**
