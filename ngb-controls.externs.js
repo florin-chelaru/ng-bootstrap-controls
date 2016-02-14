@@ -123,3 +123,20 @@ ngb.d.MultiselectList.prototype.select = function(item) {};
 /**
  */
 ngb.d.MultiselectList.prototype.clearSelection = function() {};
+
+
+/**
+ * @param {angular.Scope} $scope
+ * @param $rootScope {angular.$rootScope}
+ * @constructor
+ * @extends {ngu.Directive}
+ */
+ngb.d.HasSidebar = function ($scope, $rootScope) {};
+
+/**
+ * @param {angular.Scope} $scope
+ * @param {jQuery} $element
+ * @param {angular.Attributes} $attrs
+ * @override
+ */
+ngb.d.HasSidebar.prototype.link = function ($scope, $element, $attrs) {};

@@ -3,3 +3,10 @@
   height: 600px;
   border: 1px solid #ddd;
 }
+html {
+  height: 100%;
+}
+body {
+  height: 100%;
+  padding-top: 50px;
+}

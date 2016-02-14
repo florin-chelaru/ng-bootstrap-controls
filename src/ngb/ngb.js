@@ -12,6 +12,7 @@ goog.require('ngb.d.MultiselectList');
 
 goog.require('ngb.d.PatientModal');
 goog.require('ngb.s.Modal');
+goog.require('ngb.d.HasSidebar');
 
 ngb.main = angular.module('ngb', ['ngu', 'ui.bootstrap', 'ngAnimate']);
 
@@ -22,6 +23,11 @@ ngb.main.directive('ngbMultiselectList', ['$timeout', function() {
 ngb.main.directive('ngbPatientModal', ['$compile', function() {
   return ngu.Directive.createNew('ngbPatientModal', /** @type {function(new: ngu.Directive)} */ (ngb.d.PatientModal), arguments, {restrict: 'C'});
 }]);
+
+ngb.main.directive('ngbHasSidebar', ['$rootScope', function() {
+  return ngu.Directive.createNew('ngbHasSidebar', /** @type {function(new: ngu.Directive)} */ (ngb.d.HasSidebar), arguments);
+}]);
+
 
 ngb.main.provider('$ngbModal', function() {
   return new ngb.s.ModalProvider(/** @type {function(new: ngu.ProviderService)} */ (ngb.s.Modal), ['$uibModal', '$q', '$templateCache']);

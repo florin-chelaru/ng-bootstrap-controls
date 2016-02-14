@@ -18,6 +18,105 @@
 */
 
 
+goog.provide('ngb.d.PatientModal');
+
+goog.require('ngu.Directive');
+
+/**
+ * @param {angular.Scope} $scope
+ * @param {angular.$compile} $compile
+ * @constructor
+ * @extends {ngu.Directive}
+ */
+ngb.d.PatientModal = function ($scope, $compile) {
+  ngu.Directive.apply(this, arguments);
+
+  /**
+   * @type {angular.$compile}
+   * @private
+   */
+  this._$compile = $compile;
+};
+
+goog.inherits(ngb.d.PatientModal, ngu.Directive);
+
+ngb.d.PatientModal['options'] = {
+  'template':
+    '<div class="ngb-modal-overlay">' +
+      '<div class="ngb-loader" ng-class="loaderClass || \'\'"></div>' +
+    '</div>' +
+    '<div class="modal-header" ng-include="headerTemplateUrl" onload="headerLoaded()">' +
+    '</div>' +
+    '<div class="modal-body">' +
+    '</div>' +
+    '<div class="modal-footer" ng-include="footerTemplateUrl" onload="footerLoaded()">' +
+    '</div>'
+};
+
+/**
+ * @param {angular.Scope} $scope
+ * @param {jQuery} $element
+ * @param {angular.Attributes} $attrs
+ * @override
+ */
+ngb.d.PatientModal.prototype.link = function ($scope, $element, $attrs) {
+  var $body = $('body');
+  var $modalContent = $element.parent();
+
+  $body.removeClass('ngb-modal-open');
+
+  var $compile = this._$compile;
+
+  $scope.$on('modal.closing', function() {
+    $body.removeClass('ngb-modal-open-blur');
+  });
+
+  $scope['bodyLoaded'] = function() {
+    var $overlay = $element.find('.ngb-modal-overlay');
+    $overlay.one('transitionend', function() {
+      $overlay.css('display', 'none');
+    });
+    $overlay.css('opacity', '0');
+    $body.addClass('ngb-modal-open');
+  };
+
+  if ($scope['fixed']) {
+    $scope['headerLoaded'] = function () {
+      var $modalHeader = $element.find('.modal-header');
+      $scope.$watch(function () {
+          return $modalHeader.outerHeight();
+        },
+        function (value, oldValue) {
+          $modalContent.css('padding-top', value);
+        });
+    };
+
+    $scope['footerLoaded'] = function () {
+      var $modalFooter = $element.find('.modal-footer');
+      $scope.$watch(function () {
+          return $modalFooter.outerHeight();
+        },
+        function (value, oldValue) {
+          $modalContent.css('padding-bottom', value);
+        });
+    };
+  }
+
+  $scope['$ngbAnimation'].promise.then(function() {
+    $body.addClass('ngb-modal-open-blur');
+
+    var ngContent = angular.element('<div ng-include="bodyTemplateUrl" onload="bodyLoaded()"></div>');
+    /** @type {!angular.JQLite|jQuery} */
+    var $content = ($compile(ngContent)(/** @type {!angular.Scope} */($scope)));
+
+    var $modalBody = $element.find('.modal-body');
+    $modalBody.append(/** @type {jQuery} */($content));
+  });
+};
+
+
+
+
 goog.provide('ngb.d.MultiselectList');
 
 goog.require('ngu.Directive');
@@ -135,40 +234,62 @@ Object.defineProperty(ngb.d.MultiselectList, 'options', {
 });
 
 
-goog.provide('ngb.d.PatientModal');
+goog.provide('ngb.d.HasSidebar');
 
 goog.require('ngu.Directive');
 
 /**
  * @param {angular.Scope} $scope
- * @param {angular.$compile} $compile
+ * @param $rootScope {angular.$rootScope}
  * @constructor
  * @extends {ngu.Directive}
  */
-ngb.d.PatientModal = function ($scope, $compile) {
+ngb.d.HasSidebar = function ($scope, $rootScope) {
   ngu.Directive.apply(this, arguments);
 
-  /**
-   * @type {angular.$compile}
-   * @private
-   */
-  this._$compile = $compile;
+  // All this hacking needs to be done in order to prevent background scrolling on iOS,
+  // or scrolling to top when opening the sidebar:
+  var $body = $('body');
+  var sidebarIn = false;
+  var top;
+
+  var showSidebar = function() {
+    $body.addClass('ngb-sidebar-in');
+    top = $body.scrollTop();
+    var width = $body.width();
+    var hasScrollbar = $body.get(0).scrollHeight > $body.height() + parseFloat($body.css('padding-top')) + parseFloat($body.css('padding-bottom')); // 108 = 64 navbar + 44 footer
+    $body.css('overflow-y', hasScrollbar ? 'scroll' : 'hidden'); // scroll disables the scrollbar for body, but keeps it
+    $body.css('position', 'fixed');
+    $body.css('top', -top);
+    $body.css('width', width);
+
+    sidebarIn = true;
+  };
+
+  var hideSidebar = function() {
+    $body.removeClass('ngb-sidebar-in');
+    $body.css('overflow-y', '');
+    $body.css('position', '');
+    $body.css('top', '');
+    $body.css('width', '');
+    $body.scrollTop(top);
+    sidebarIn = false;
+  };
+
+  $rootScope.$on('sidebarOn', showSidebar);
+
+  $rootScope.$on('sidebarOff', hideSidebar);
+
+  $rootScope.$on('sidebarToggle', function() {
+    if (sidebarIn) {
+      hideSidebar();
+    } else {
+      showSidebar();
+    }
+  });
 };
 
-goog.inherits(ngb.d.PatientModal, ngu.Directive);
-
-ngb.d.PatientModal['options'] = {
-  'template':
-    '<div class="ngb-modal-overlay">' +
-      '<div class="ngb-loader" ng-class="loaderClass || \'\'"></div>' +
-    '</div>' +
-    '<div class="modal-header" ng-include="headerTemplateUrl" onload="headerLoaded()">' +
-    '</div>' +
-    '<div class="modal-body">' +
-    '</div>' +
-    '<div class="modal-footer" ng-include="footerTemplateUrl" onload="footerLoaded()">' +
-    '</div>'
-};
+goog.inherits(ngb.d.HasSidebar, ngu.Directive);
 
 /**
  * @param {angular.Scope} $scope
@@ -176,62 +297,7 @@ ngb.d.PatientModal['options'] = {
  * @param {angular.Attributes} $attrs
  * @override
  */
-ngb.d.PatientModal.prototype.link = function ($scope, $element, $attrs) {
-  var $body = $('body');
-  var $modalContent = $element.parent();
-
-  $body.removeClass('ngb-modal-open');
-
-  var $compile = this._$compile;
-
-  $scope.$on('modal.closing', function() {
-    $body.removeClass('ngb-modal-open-blur');
-  });
-
-  $scope['bodyLoaded'] = function() {
-    var $overlay = $element.find('.ngb-modal-overlay');
-    $overlay.one('transitionend', function() {
-      $overlay.css('display', 'none');
-    });
-    $overlay.css('opacity', '0');
-    $body.addClass('ngb-modal-open');
-  };
-
-  if ($scope['fixed']) {
-    $scope['headerLoaded'] = function () {
-      var $modalHeader = $element.find('.modal-header');
-      $scope.$watch(function () {
-          return $modalHeader.outerHeight();
-        },
-        function (value, oldValue) {
-          $modalContent.css('padding-top', value);
-        });
-    };
-
-    $scope['footerLoaded'] = function () {
-      var $modalFooter = $element.find('.modal-footer');
-      $scope.$watch(function () {
-          return $modalFooter.outerHeight();
-        },
-        function (value, oldValue) {
-          $modalContent.css('padding-bottom', value);
-        });
-    };
-  }
-
-  $scope['$ngbAnimation'].promise.then(function() {
-    $body.addClass('ngb-modal-open-blur');
-
-    var ngContent = angular.element('<div ng-include="bodyTemplateUrl" onload="bodyLoaded()"></div>');
-    /** @type {!angular.JQLite|jQuery} */
-    var $content = ($compile(ngContent)(/** @type {!angular.Scope} */($scope)));
-
-    var $modalBody = $element.find('.modal-body');
-    $modalBody.append(/** @type {jQuery} */($content));
-  });
-};
-
-
+ngb.d.HasSidebar.prototype.link = function ($scope, $element, $attrs) {};
 
 
 goog.provide('ngb.s.ModalProvider');
@@ -516,6 +582,7 @@ goog.require('ngb.d.MultiselectList');
 
 goog.require('ngb.d.PatientModal');
 goog.require('ngb.s.Modal');
+goog.require('ngb.d.HasSidebar');
 
 ngb.main = angular.module('ngb', ['ngu', 'ui.bootstrap', 'ngAnimate']);
 
@@ -526,6 +593,11 @@ ngb.main.directive('ngbMultiselectList', ['$timeout', function() {
 ngb.main.directive('ngbPatientModal', ['$compile', function() {
   return ngu.Directive.createNew('ngbPatientModal', /** @type {function(new: ngu.Directive)} */ (ngb.d.PatientModal), arguments, {restrict: 'C'});
 }]);
+
+ngb.main.directive('ngbHasSidebar', ['$rootScope', function() {
+  return ngu.Directive.createNew('ngbHasSidebar', /** @type {function(new: ngu.Directive)} */ (ngb.d.HasSidebar), arguments);
+}]);
+
 
 ngb.main.provider('$ngbModal', function() {
   return new ngb.s.ModalProvider(/** @type {function(new: ngu.ProviderService)} */ (ngb.s.Modal), ['$uibModal', '$q', '$templateCache']);
