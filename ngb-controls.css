@@ -201,11 +201,13 @@
   -o-transition: -o-transform 200ms ease;
   transition: transform 200ms ease;
 }
-.ngb-sidebar-container .ngb-sidebar .list-group-item:first-child {
-  border-radius: 0;
-}
+.ngb-sidebar-container .ngb-sidebar .list-group-item:first-child,
 .ngb-sidebar-container .ngb-sidebar .list-group-item:last-child {
   border-radius: 0;
+}
+.ngb-sidebar-container .ngb-sidebar .list-group-item .ngb-sidebar-icon {
+  line-height: 20px;
+  vertical-align: middle;
 }
 .ngb-sidebar-in .ngb-sidebar-container .ngb-sidebar {
   -webkit-transform: translate3d(0, 0, 0);

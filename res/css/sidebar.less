@@ -54,11 +54,16 @@
 
     .transition-transform(@ngb-sidebar-transition-transform);
 
-    .list-group-item:first-child {
-      border-radius: 0;
-    }
-    .list-group-item:last-child {
-      border-radius: 0;
+    .list-group-item {
+      &:first-child,
+      &:last-child {
+        border-radius: 0;
+      }
+
+      .ngb-sidebar-icon {
+        line-height: @line-height-computed;
+        vertical-align: middle;
+      }
     }
   }
 }
