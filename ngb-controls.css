@@ -118,7 +118,7 @@
   opacity: 1;
   filter: alpha(opacity=100);
 }
-@media (min-width: 768px) {
+@media (min-width: 992px) {
   .ngb-modal-open .modal-backdrop.fade.in {
     opacity: 0.8;
     filter: alpha(opacity=80);
@@ -231,7 +231,7 @@
   opacity: 1;
   filter: alpha(opacity=100);
 }
-@media (min-width: 768px) {
+@media (min-width: 992px) {
   .ngb-sidebar-in .ngb-sidebar-backdrop.fade {
     opacity: 0.8;
     filter: alpha(opacity=80);
