@@ -117,6 +117,123 @@ ngb.d.PatientModal.prototype.link = function ($scope, $element, $attrs) {
 
 
 
+goog.provide('ngb.d.MultiselectList');
+
+goog.require('ngu.Directive');
+
+/**
+ * @param {angular.Scope} $scope
+ * @param {angular.$timeout} $timeout
+ * @constructor
+ * @extends {ngu.Directive}
+ */
+ngb.d.MultiselectList = function ($scope, $timeout) {
+  ngu.Directive.apply(this, arguments);
+
+  /**
+   * @type {angular.$timeout}
+   * @private
+   */
+  this._$timeout = $timeout;
+};
+
+goog.inherits(ngb.d.MultiselectList, ngu.Directive);
+
+/**
+ * @param {angular.Scope} $scope
+ * @param {jQuery} $element
+ * @param {angular.Attributes} $attrs
+ * @override
+ */
+ngb.d.MultiselectList.prototype.link = function ($scope, $element, $attrs) {
+  var self = this;
+
+  var moreRemaining = true;
+  var $list = $element.find('> .list-group');
+  var iterate = function() {
+    if ($list.get(0).scrollHeight <= $list.height() && moreRemaining) {
+      moreRemaining = $scope['ngbLoadMore']();
+      self._$timeout(iterate, 0);
+    }
+  };
+  iterate();
+
+  $list.scroll(function() {
+    self._$timeout(function() {
+      if (moreRemaining && $list.get(0).scrollHeight - $list.scrollTop() == $list.height()) {
+        moreRemaining = $scope['ngbLoadMore']();
+      }
+    }, 0);
+  });
+
+  $scope.$watch('ngbFilter', function(value, oldVal) {
+    iterate();
+  });
+};
+
+/**
+ * @param {{label:string, index:number}} item
+ * @returns {boolean}
+ */
+
+ngb.d.MultiselectList.prototype.isSelected = function(item) { return this['$scope']['ngbSelection'][item.index]; };
+
+/**
+ * @param {{label:string, index:number}} item
+ */
+ngb.d.MultiselectList.prototype.select = function(item) {
+  if (item.index in this['$scope']['ngbSelection']) {
+    delete this['$scope']['ngbSelection'][item.index];
+  } else {
+    this['$scope']['ngbSelection'][item.index] = item;
+  }
+};
+
+/**
+ */
+ngb.d.MultiselectList.prototype.clearSelection = function() {
+  this['$scope']['ngbSelection'] = {};
+};
+
+Object.defineProperty(ngb.d.MultiselectList, 'options', {
+  get: function() {
+    var self = this;
+    return {
+      'template':
+        '<div class="nav navbar navbar-default" ng-if="ngbTitle">' +
+          '<div class="navbar-header">' +
+            '<div class="navbar-brand">{{ ngbTitle }}</div>' +
+          '</div>' +
+        '</div>' +
+        '<form class="ngb-list-search" role="search">' +
+          '<div class="input-group">' +
+            '<input type="text" class="form-control" placeholder="Search" ng-model="ngbFilter">' +
+            '<div class="input-group-btn">' +
+              '<button type="button" class="btn btn-default" aria-label="Select all" ng-click="ngbSelectAll()">' +
+                '<span class="fa fa-check-square"></span>' +
+              '</button>' +
+              '<button type="button" class="btn btn-default" aria-label="Clear selection" ng-click="ngbMultiselectList.clearSelection()">' +
+                '<span class="fa fa-square-o"></span>' +
+              '</button>' +
+            '</div>' +
+          '</div>' +
+        '</form>' +
+        '<div class="list-group list" ng-class="{\'ngb-has-title\': !!ngbTitle}">' +
+          '<a ng-repeat="item in ngbItems | filter:ngbFilter" href="" class="list-group-item" ng-class="{\'active\': ngbMultiselectList.isSelected(item)}" ng-click="ngbMultiselectList.select(item)" >{{ item.label }}</a>' +
+        '</div>',
+      'scope': {
+        'ngbTitle': '=',
+        'ngbItems': '=',
+        'ngbFilter': '=',
+        'ngbSelection': '=',
+        'ngbLoadMore': '&',
+        'ngbSelectAll': '&'
+      }
+    };
+  }
+});
+
+
 goog.provide('ngb.s.ModalProvider');
 goog.provide('ngb.s.Modal');
 goog.provide('ngb.s.ModalController');
@@ -205,9 +322,9 @@ ngb.s.Modal = function(provider, $uibModal, $q, $templateCache) {
     '<h4 class="modal-title">{{ title }}</h4>');
 
   $templateCache.put('ngb/template/modal/footer-buttons.html',
-    '<button ng-repeat="(btnLabel, btnFunc) in footerButtons" ' +
-    'type="button" class="btn" ng-class="$index == 0 ? \'btn-primary\' : \'btn-default\'" ' +
-    'ng-click="btnFunc()">{{ btnLabel }}</button>');
+    '<button ng-repeat="btn in footerButtons" ' +
+    'type="button" class="btn" ng-class="btn.class != undefined ? btn.class : \'btn-default\'" ' +
+    'ng-click="btn.click && btn.click()" ng-disabled="btn.disabled && btn.disabled()">{{ btn.label }}</button>');
 
   $templateCache.put('ngb/template/modal/footer-input-text.html',
     '<form role="form" class="input-group">' +
@@ -385,7 +502,7 @@ ngb.s.ModalController.prototype.$ngbAnimation;
 ngb.s.ModalController.prototype.bodyTemplateUrl;
 
 /**
- * @type {Object.<string, Function>}
+ * @type {Array.<{label: string, click: (Function|undefined), disabled: (Function|undefined), class: (Function|string|undefined)}>}
  * @name ngb.s.ModalController#footerButtons
  */
 ngb.s.ModalController.prototype.footerButtons;
@@ -409,10 +526,20 @@ Object.defineProperties(ngb.s.ModalController.prototype, {
   'footerButtons': {
     get: /** @type {function (this:ngb.s.ModalController)} */ (function () {
       var $modalInstance = this._$modalInstance;
-      return {
-        'Ok': function() { $modalInstance['close'](); },
-        'Cancel': function() { $modalInstance['dismiss']('cancel'); }
-      };
+      return [
+        {
+          'label': 'Ok',
+          'click': function() { $modalInstance['close'](); },
+          'disabled': function() { return false; },
+          'class': 'btn-primary'
+        },
+        {
+          'label': 'Cancel',
+          'click': function() { $modalInstance['dismiss']('cancel'); },
+          'class': 'btn-default',
+          'disabled': function() { return false; }
+        }
+      ];
     })
   }
 });
@@ -422,123 +549,6 @@ Object.defineProperties(ngb.s.ModalController.prototype, {
 ngb.s.ModalController.prototype.close = function() {
   this._$modalInstance['dismiss']('close');
 };
-
-
-goog.provide('ngb.d.MultiselectList');
-
-goog.require('ngu.Directive');
-
-/**
- * @param {angular.Scope} $scope
- * @param {angular.$timeout} $timeout
- * @constructor
- * @extends {ngu.Directive}
- */
-ngb.d.MultiselectList = function ($scope, $timeout) {
-  ngu.Directive.apply(this, arguments);
-
-  /**
-   * @type {angular.$timeout}
-   * @private
-   */
-  this._$timeout = $timeout;
-};
-
-goog.inherits(ngb.d.MultiselectList, ngu.Directive);
-
-/**
- * @param {angular.Scope} $scope
- * @param {jQuery} $element
- * @param {angular.Attributes} $attrs
- * @override
- */
-ngb.d.MultiselectList.prototype.link = function ($scope, $element, $attrs) {
-  var self = this;
-
-  var moreRemaining = true;
-  var $list = $element.find('> .list-group');
-  var iterate = function() {
-    if ($list.get(0).scrollHeight <= $list.height() && moreRemaining) {
-      moreRemaining = $scope['ngbLoadMore']();
-      self._$timeout(iterate, 0);
-    }
-  };
-  iterate();
-
-  $list.scroll(function() {
-    self._$timeout(function() {
-      if (moreRemaining && $list.get(0).scrollHeight - $list.scrollTop() == $list.height()) {
-        moreRemaining = $scope['ngbLoadMore']();
-      }
-    }, 0);
-  });
-
-  $scope.$watch('ngbFilter', function(value, oldVal) {
-    iterate();
-  });
-};
-
-/**
- * @param {{label:string, index:number}} item
- * @returns {boolean}
- */
-
-ngb.d.MultiselectList.prototype.isSelected = function(item) { return this['$scope']['ngbSelection'][item.index]; };
-
-/**
- * @param {{label:string, index:number}} item
- */
-ngb.d.MultiselectList.prototype.select = function(item) {
-  if (item.index in this['$scope']['ngbSelection']) {
-    delete this['$scope']['ngbSelection'][item.index];
-  } else {
-    this['$scope']['ngbSelection'][item.index] = item;
-  }
-};
-
-/**
- */
-ngb.d.MultiselectList.prototype.clearSelection = function() {
-  this['$scope']['ngbSelection'] = {};
-};
-
-Object.defineProperty(ngb.d.MultiselectList, 'options', {
-  get: function() {
-    var self = this;
-    return {
-      'template':
-        '<div class="nav navbar navbar-default" ng-if="ngbTitle">' +
-          '<div class="navbar-header">' +
-            '<div class="navbar-brand">{{ ngbTitle }}</div>' +
-          '</div>' +
-        '</div>' +
-        '<form class="ngb-list-search" role="search">' +
-          '<div class="input-group">' +
-            '<input type="text" class="form-control" placeholder="Search" ng-model="ngbFilter">' +
-            '<div class="input-group-btn">' +
-              '<button type="button" class="btn btn-default" aria-label="Select all" ng-click="ngbSelectAll()">' +
-                '<span class="fa fa-check-square"></span>' +
-              '</button>' +
-              '<button type="button" class="btn btn-default" aria-label="Clear selection" ng-click="ngbMultiselectList.clearSelection()">' +
-                '<span class="fa fa-square-o"></span>' +
-              '</button>' +
-            '</div>' +
-          '</div>' +
-        '</form>' +
-        '<div class="list-group list" ng-class="{\'ngb-has-title\': !!ngbTitle}">' +
-          '<a ng-repeat="item in ngbItems | filter:ngbFilter" href="" class="list-group-item" ng-class="{\'active\': ngbMultiselectList.isSelected(item)}" ng-click="ngbMultiselectList.select(item)" >{{ item.label }}</a>' +
-        '</div>',
-      'scope': {
-        'ngbTitle': '=',
-        'ngbItems': '=',
-        'ngbFilter': '=',
-        'ngbSelection': '=',
-        'ngbLoadMore': '&',
-        'ngbSelectAll': '&'
-      }
-    };
-  }
-});
 
 
 goog.provide('ngb.d.HasSidebar');

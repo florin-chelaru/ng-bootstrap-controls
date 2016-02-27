@@ -237,7 +237,7 @@ ngb.test.MainController.prototype.showModal = function() {
     'title': 'Some title',
     'loaderClass': 'timer-loader',
     'fixed': false,
-    'useFooterInputText': true,
+    'useFooterInputText': false,
     'sendMessage': function(message) { alert(message); }
   });
   modalInstance.result.then(function (selectedItem) {

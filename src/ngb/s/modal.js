@@ -92,9 +92,9 @@ ngb.s.Modal = function(provider, $uibModal, $q, $templateCache) {
     '<h4 class="modal-title">{{ title }}</h4>');
 
   $templateCache.put('ngb/template/modal/footer-buttons.html',
-    '<button ng-repeat="(btnLabel, btnFunc) in footerButtons" ' +
-    'type="button" class="btn" ng-class="$index == 0 ? \'btn-primary\' : \'btn-default\'" ' +
-    'ng-click="btnFunc()">{{ btnLabel }}</button>');
+    '<button ng-repeat="btn in footerButtons" ' +
+    'type="button" class="btn" ng-class="btn.class != undefined ? btn.class : \'btn-default\'" ' +
+    'ng-click="btn.click && btn.click()" ng-disabled="btn.disabled && btn.disabled()">{{ btn.label }}</button>');
 
   $templateCache.put('ngb/template/modal/footer-input-text.html',
     '<form role="form" class="input-group">' +
@@ -272,7 +272,7 @@ ngb.s.ModalController.prototype.$ngbAnimation;
 ngb.s.ModalController.prototype.bodyTemplateUrl;
 
 /**
- * @type {Object.<string, Function>}
+ * @type {Array.<{label: string, click: (Function|undefined), disabled: (Function|undefined), class: (Function|string|undefined)}>}
  * @name ngb.s.ModalController#footerButtons
  */
 ngb.s.ModalController.prototype.footerButtons;
@@ -296,10 +296,20 @@ Object.defineProperties(ngb.s.ModalController.prototype, {
   'footerButtons': {
     get: /** @type {function (this:ngb.s.ModalController)} */ (function () {
       var $modalInstance = this._$modalInstance;
-      return {
-        'Ok': function() { $modalInstance['close'](); },
-        'Cancel': function() { $modalInstance['dismiss']('cancel'); }
-      };
+      return [
+        {
+          'label': 'Ok',
+          'click': function() { $modalInstance['close'](); },
+          'disabled': function() { return false; },
+          'class': 'btn-primary'
+        },
+        {
+          'label': 'Cancel',
+          'click': function() { $modalInstance['dismiss']('cancel'); },
+          'class': 'btn-default',
+          'disabled': function() { return false; }
+        }
+      ];
     })
   }
 });
