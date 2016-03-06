@@ -81,7 +81,7 @@ ngb.d.HasSidebar = function ($scope, $rootScope, $q) {
       $backdrop.css('display', 'block');
       u.reflowForTransition($backdrop[0]);
 
-      $body.addClass('ngb-sidebar-in');
+      $body.addClass('ngb-sidebar-in' + sidebarClass.replace(/\./g, ' '));
 
       if (!bodyState) {
         bodyState = ngu.disableBodyScroll(true);
@@ -116,7 +116,7 @@ ngb.d.HasSidebar = function ($scope, $rootScope, $q) {
         if (containerRemoved) { resolve(); }
       });
 
-      $body.removeClass('ngb-sidebar-in');
+      $body.removeClass('ngb-sidebar-in' + sidebarClass.replace(/\./g, ' '));
 
       ngu.reEnableBodyScroll(/** @type {{scrollTop: number, $doc: jQuery}} */ (bodyState));
       bodyState = null;
