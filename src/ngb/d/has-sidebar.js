@@ -91,7 +91,9 @@ ngb.d.HasSidebar = function ($scope, $rootScope, $q) {
 
   var hideSidebar = function(e, sidebarClass) {
     return $q(function(resolve, reject) {
-      sidebarClass = sidebarClass || '';
+      if (sidebarClass == undefined) {
+        sidebarClass = currentSidebar || '';
+      }
       var sidebar = sidebarMap[sidebarClass];
       if (!sidebar || !sidebar['in']) { resolve(); return; }
 
@@ -126,6 +128,9 @@ ngb.d.HasSidebar = function ($scope, $rootScope, $q) {
   $rootScope.$on('sidebarOff', hideSidebar);
 
   $rootScope.$on('sidebarToggle', function(e, sidebarClass) {
+    if (sidebarClass == undefined) {
+      sidebarClass = currentSidebar || '';
+    }
     var sidebar = sidebarMap[sidebarClass];
     if (sidebar && sidebar['in']) {
       hideSidebar(e, sidebarClass);
