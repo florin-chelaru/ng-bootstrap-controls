@@ -11,71 +11,126 @@ goog.require('ngu.Directive');
 /**
  * @param {angular.Scope} $scope
  * @param $rootScope {angular.$rootScope}
+ * @param $q
  * @constructor
  * @extends {ngu.Directive}
  */
-ngb.d.HasSidebar = function ($scope, $rootScope) {
+ngb.d.HasSidebar = function ($scope, $rootScope, $q) {
   ngu.Directive.apply(this, arguments);
 
   // All this hacking needs to be done in order to prevent background scrolling on iOS,
   // or scrolling to top when opening the sidebar:
   var $body = $('body');
-  var sidebarIn = false;
-  var top;
-  var $sidebarContainer;
-  var $sidebarBackdrop;
+
+  /**
+   * @type {Object.<string, {in:boolean, $container:jQuery, $backdrop:jQuery}>}
+   */
+  var sidebarMap = {};
 
   /** @type {{scrollTop: number, $doc: jQuery}|null} */
   var bodyState = null;
 
-  var showSidebar = function() {
-    if (sidebarIn) { return; }
-    if (!$sidebarContainer) {
-      $sidebarContainer = $('.ngb-sidebar-container');
-      $sidebarBackdrop = $('.ngb-sidebar-backdrop');
-    }
-    $sidebarContainer.css('display', 'block');
-    u.reflowForTransition($sidebarContainer[0]);
+  /**
+   * @type {string|null}
+   */
+  var currentSidebar = null;
 
-    $sidebarBackdrop.css('display', 'block');
-    u.reflowForTransition($sidebarBackdrop[0]);
+  var showSidebar = function(e, sidebarClass) {
+    return $q(function(resolve, reject) {
+      if (currentSidebar != null) {
+        if (currentSidebar == sidebarClass) { resolve(); return; }
 
-    $body.addClass('ngb-sidebar-in');
+        hideSidebar(e, currentSidebar).then(function() {
+          showSidebar(e, sidebarClass);
+        });
+        return;
+      }
 
-    bodyState = ngu.disableBodyScroll(true);
+      sidebarClass = sidebarClass || '';
+      currentSidebar = sidebarClass;
+      var sidebar = sidebarMap[sidebarClass];
+      if (sidebar && sidebar['in']) { resolve(); return; }
+      if (!sidebar) {
+        sidebar = {
+          'in': true,
+          '$container': $('.ngb-sidebar-container' + sidebarClass),
+          '$backdrop': $('.ngb-sidebar-backdrop' + sidebarClass)
+        };
+        sidebarMap[sidebarClass] = sidebar;
+      }
+      sidebar['in'] = true;
+      var $container = sidebar['$container'];
+      var $backdrop = sidebar['$backdrop'];
 
-    sidebarIn = true;
+      var containerAdded = false;
+      var backdropAdded = false;
+
+      $container.one('transitionend', function() {
+        containerAdded = true;
+        if (backdropAdded) { resolve(); }
+      });
+
+      $backdrop.one('transitionend', function() {
+        backdropAdded = true;
+        if (containerAdded) { resolve(); }
+      });
+
+      $container.css('display', 'block');
+      u.reflowForTransition($container[0]);
+
+      $backdrop.css('display', 'block');
+      u.reflowForTransition($backdrop[0]);
+
+      $body.addClass('ngb-sidebar-in');
+
+      if (!bodyState) {
+        bodyState = ngu.disableBodyScroll(true);
+      }
+    });
   };
 
-  var hideSidebar = function() {
-    if (!sidebarIn) { return; }
-    if (!$sidebarContainer) {
-      $sidebarContainer = $('.ngb-sidebar-container');
-      $sidebarBackdrop = $('.ngb-sidebar-backdrop');
-    }
-    $sidebarContainer.one('transitionend', function() {
-      $sidebarContainer.css('display', '');
-    });
-    $sidebarBackdrop.one('transitionend', function() {
-      $sidebarBackdrop.css('display', '');
-    });
-    $body.removeClass('ngb-sidebar-in');
+  var hideSidebar = function(e, sidebarClass) {
+    return $q(function(resolve, reject) {
+      sidebarClass = sidebarClass || '';
+      var sidebar = sidebarMap[sidebarClass];
+      if (!sidebar || !sidebar['in']) { resolve(); return; }
 
-    ngu.reEnableBodyScroll(/** @type {{scrollTop: number, $doc: jQuery}} */ (bodyState));
-    bodyState = null;
+      sidebar['in'] = false;
+      var $container = sidebar['$container'];
+      var $backdrop = sidebar['$backdrop'];
+      currentSidebar = null;
 
-    sidebarIn = false;
+      var containerRemoved = false;
+      var backdropRemoved = false;
+
+      $container.one('transitionend', function() {
+        $container.css('display', '');
+        containerRemoved = true;
+        if (backdropRemoved) { resolve(); }
+      });
+      $backdrop.one('transitionend', function() {
+        $backdrop.css('display', '');
+        backdropRemoved = true;
+        if (containerRemoved) { resolve(); }
+      });
+
+      $body.removeClass('ngb-sidebar-in');
+
+      ngu.reEnableBodyScroll(/** @type {{scrollTop: number, $doc: jQuery}} */ (bodyState));
+      bodyState = null;
+    });
   };
 
   $rootScope.$on('sidebarOn', showSidebar);
 
   $rootScope.$on('sidebarOff', hideSidebar);
 
-  $rootScope.$on('sidebarToggle', function() {
-    if (sidebarIn) {
-      hideSidebar();
+  $rootScope.$on('sidebarToggle', function(e, sidebarClass) {
+    var sidebar = sidebarMap[sidebarClass];
+    if (sidebar && sidebar['in']) {
+      hideSidebar(e, sidebarClass);
     } else {
-      showSidebar();
+      showSidebar(e, sidebarClass);
     }
   });
 };

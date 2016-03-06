@@ -24,7 +24,7 @@ ngb.main.directive('ngbPatientModal', ['$compile', function() {
   return ngu.Directive.createNew('ngbPatientModal', /** @type {function(new: ngu.Directive)} */ (ngb.d.PatientModal), arguments, {restrict: 'C'});
 }]);
 
-ngb.main.directive('ngbHasSidebar', ['$rootScope', function() {
+ngb.main.directive('ngbHasSidebar', ['$rootScope', '$q', function() {
   return ngu.Directive.createNew('ngbHasSidebar', /** @type {function(new: ngu.Directive)} */ (ngb.d.HasSidebar), arguments);
 }]);
 
