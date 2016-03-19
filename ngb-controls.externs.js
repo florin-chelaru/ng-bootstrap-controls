@@ -94,6 +94,16 @@ ngb.s.ModalController.prototype.footerButtons;
 ngb.s.ModalController.prototype.close = function() {};
 
 /**
+ * @param {boolean} value
+ */
+ngb.s.ModalController.prototype.toggleInputTextEnabled = function(value) {};
+
+/**
+ * @param {boolean} value
+ */
+ngb.s.ModalController.prototype.toggleInputButtonEnabled = function(value) {};
+
+/**
  * @param {angular.Scope} $scope
  * @param {angular.$timeout} $timeout
  * @constructor
