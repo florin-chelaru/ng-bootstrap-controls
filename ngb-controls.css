@@ -101,6 +101,12 @@
   max-height: 100px;
   resize: none;
 }
+.ngb-modal.modal .modal-dialog .ngb-blocked {
+  opacity: 0.65;
+  filter: alpha(opacity=65);
+  -webkit-box-shadow: none;
+  box-shadow: none;
+}
 .modal-backdrop {
   position: fixed;
   top: 0;

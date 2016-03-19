@@ -237,8 +237,9 @@ ngb.test.MainController.prototype.showModal = function() {
     'title': 'Some title',
     'loaderClass': 'timer-loader',
     'fixed': false,
-    'useFooterInputText': false,
-    'sendMessage': function(message) { alert(message); }
+    'useFooterInputText': true,
+    'sendMessage': function(message) { alert(message); return true; },
+    'controller': 'ngb.test.MyModalController'
   });
   modalInstance.result.then(function (selectedItem) {
     //$scope.selected = selectedItem;
@@ -257,10 +258,28 @@ ngb.test.MainController.prototype.showModal = function() {
 ngb.test.MyModalController = function() {
   ngb.s.ModalController.apply(this, arguments);
 
-  this.$scope.adjustHeight = function($event) {
+  /*this.$scope.adjustHeight = function($event) {
     $event.target.style.height = (2 + $event.target.scrollHeight) + 'px';
     //o.style.height = (25+o.scrollHeight)+"px";
-  }
+  }*/
+
+  //this.toggleInputButtonEnabled(false);
+  //this.toggleInputTextEnabled(false);
+
+  var self = this;
+  this['$scope'].$watch('inputText', function(newVal, oldVal) {
+    self.toggleInputButtonEnabled(!!(newVal.trim()));
+  });
 };
 
 goog.inherits(ngb.test.MyModalController, ngb.s.ModalController);
+
+Object.defineProperties(ngb.test.MyModalController.prototype, {
+  'inputTextWatermark': {
+    get: /** @type {function (this:ngb.test.MyModalController)} */ (function () {
+      return 'We don\'t need no education...';
+    }),
+    set: /** @type {function (this:ngb.test.MyModalController)} */ (function (value) {
+    })
+  }
+});

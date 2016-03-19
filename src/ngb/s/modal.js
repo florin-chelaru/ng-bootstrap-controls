@@ -98,8 +98,8 @@ ngb.s.Modal = function(provider, $uibModal, $q, $templateCache) {
 
   $templateCache.put('ngb/template/modal/footer-input-text.html',
     '<form role="form" class="input-group">' +
-      '<textarea class="form-control ngb-modal-input-text" ng-keyup="adjustHeight($event)" ng-model="$parent.inputText" placeholder="Write an answer..."></textarea>' +
-      '<span class="btn btn-primary input-group-addon" ng-click="sendMessage()"><span class="fa fa-chevron-right"></span></span>' +
+      '<textarea class="form-control ngb-modal-input-text" ng-disabled="!inputTextEnabled" ng-keyup="adjustHeight($event)" ng-model="$parent.inputText" ng-attr-placeholder="{{ inputTextWatermark }}"></textarea>' +
+      '<span class="input-group-addon" ng-class="{\'ngb-blocked\': !inputButtonEnabled, \'btn btn-primary\': !!inputButtonEnabled}" ng-click="inputButtonEnabled && sendMessage()"><span class="fa fa-chevron-right"></span></span>' +
       // The one below doesn't stretch the button to the height of the text area:
       /*'<span class="input-group-btn" >' +
         '<button class="btn btn-primary" ng-click="sendMessage()"><span class="fa fa-chevron-right"></span></button>' +
@@ -214,6 +214,18 @@ ngb.s.ModalController = function($scope, $uibModalInstance, $ngbAnimation, bodyT
    */
   this._bodyTemplateUrl = bodyTemplateUrl;
 
+  /**
+   * @type {string}
+   * @private
+   */
+  this._inputText;
+
+  /**
+   * @type {string}
+   * @private
+   */
+  this._inputTextWatermark = 'Write an answer...';
+
   $scope['$ngbAnimation'] = $ngbAnimation;
   $scope['bodyTemplateUrl'] = bodyTemplateUrl;
   $scope['title'] = options['title'];
@@ -237,16 +249,37 @@ ngb.s.ModalController = function($scope, $uibModalInstance, $ngbAnimation, bodyT
     }
     t.style.height = (parseFloat($t.css('border-top-width')) + parseFloat($t.css('border-bottom-width')) + t.scrollHeight) + 'px';
   };
-  $scope['inputText'] = '';
+
+  $scope['inputTextEnabled'] = true;
+  $scope['inputButtonEnabled'] = true;
+
+  Object.defineProperties($scope, {
+    'inputText': {
+      get: function () {
+        return self['inputText'];
+      },
+      set: function (value) {
+        self['inputText'] = value;
+      }
+    },
+    'inputTextWatermark': {
+      get: function() {
+        return self['inputTextWatermark'];
+      },
+      set: function(value) {
+        self['inputTextWatermark'] = value;
+      }
+    }
+  });
   $scope['sendMessage'] = function() {
     if (options['sendMessage']) {
       var message = $scope['inputText'];
-      $scope['inputText'] = '';
-      if (textBox) {
+
+      // Calling sendMessage(message)
+      if (options['sendMessage'](message) && textBox) {
         textBox.style.height = initialHeight + 'px';
-        textBox.value = '';
+        $scope['inputText'] = '';
       }
-      options['sendMessage'](message);
     }
   };
 };
@@ -311,6 +344,23 @@ Object.defineProperties(ngb.s.ModalController.prototype, {
         }
       ];
     })
+  },
+  'inputText': {
+    get: /** @type {function (this:ngb.s.ModalController)} */ (function () {
+      if (this._inputText == undefined) { this._inputText = ''; }
+      return this._inputText;
+    }),
+    set: /** @type {function (this:ngb.s.ModalController)} */ (function (value) {
+      this._inputText = value;
+    })
+  },
+  'inputTextWatermark': {
+    get: /** @type {function (this:ngb.s.ModalController)} */ (function () {
+      return this._inputTextWatermark;
+    }),
+    set: /** @type {function (this:ngb.s.ModalController)} */ (function (value) {
+      this._inputTextWatermark = value;
+    })
   }
 });
 
@@ -318,4 +368,18 @@ Object.defineProperties(ngb.s.ModalController.prototype, {
  */
 ngb.s.ModalController.prototype.close = function() {
   this._$modalInstance['dismiss']('close');
+};
+
+/**
+ * @param {boolean} value
+ */
+ngb.s.ModalController.prototype.toggleInputTextEnabled = function(value) {
+  this['$scope']['inputTextEnabled'] = !!value;
+};
+
+/**
+ * @param {boolean} value
+ */
+ngb.s.ModalController.prototype.toggleInputButtonEnabled = function(value) {
+  this['$scope']['inputButtonEnabled'] = !!value;
 };

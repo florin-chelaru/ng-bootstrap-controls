@@ -87,12 +87,15 @@
 
       .ngb-modal-input-text {
         height: @input-height-base;
-        /*width: ~'calc(100% - 2 * @{padding-base-horizontal} - 15px)';*/
-        /*float: left;*/
         line-height: @line-height-large;
         max-height: 100px;
         resize: none;
       }
+    }
+
+    .ngb-blocked {
+      .opacity(.65);
+      .box-shadow(none);
     }
   }
 }

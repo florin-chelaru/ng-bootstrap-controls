@@ -11,6 +11,9 @@ goog.exportSymbol('ngb.s.ModalController', ngb.s.ModalController);
 
 goog.exportProperty(ngb.s.Modal.prototype, 'open', ngb.s.Modal.prototype.open);
 
+goog.exportProperty(ngb.s.ModalController.prototype, 'toggleInputTextEnabled', ngb.s.ModalController.prototype.toggleInputTextEnabled);
+goog.exportProperty(ngb.s.ModalController.prototype, 'toggleInputButtonEnabled', ngb.s.ModalController.prototype.toggleInputButtonEnabled);
+
 // Export for inheritance:
 
 if (Object.getOwnPropertyDescriptor(ngb.s.ModalController.prototype, 'close') == undefined) {
