@@ -40,7 +40,7 @@ ngb.s.ModalProvider = function(serviceCtor, serviceArgs) {};
 ngb.s.Modal = function(provider, $uibModal, $q, $templateCache) {};
 
 /**
- * @param {{animation: (boolean|undefined), appendTo: (jQuery|undefined), backdrop: (boolean|string|undefined),
+ * @param {*|{animation: (boolean|undefined), appendTo: (jQuery|undefined), backdrop: (boolean|string|undefined),
  *   backdropClass: (string|undefined), bindToController: (boolean|undefined),
  *   controller: (Function|string|Array|undefined), controllerAs: (string|undefined), keyboard: (boolean|undefined),
  *   openedClass: (string|undefined), resolve: (Object|undefined), $scope: (angular.Scope|undefined), size: (string|undefined),
