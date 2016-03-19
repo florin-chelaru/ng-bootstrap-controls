@@ -14,7 +14,7 @@ ngb.test.App.controller('ngb.test.MainController', ['$scope', '$ngbModal', '$tem
   return u.reflection.applyConstructor(ngb.test.MainController, arguments);
 }]);
 
-ngb.test.App.controller('ngb.test.MyModalController', ['$scope', '$uibModalInstance', '$ngbAnimation', 'bodyTemplateUrl', 'options', function() {
+ngb.test.App.controller('ngb.test.MyModalController', ['$scope', '$uibModalInstance', '$ngbAnimation', 'bodyTemplateUrl', 'options', '$q', function() {
   return u.reflection.applyConstructor(/** @type {function(new: ngu.Controller)} */ (ngb.test.MyModalController), arguments);
 }]);
 

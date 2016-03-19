@@ -275,11 +275,15 @@ ngb.s.ModalController = function($scope, $uibModalInstance, $ngbAnimation, bodyT
     if (options['sendMessage']) {
       var message = $scope['inputText'];
 
-      // Calling sendMessage(message)
-      if (options['sendMessage'](message) && textBox) {
-        textBox.style.height = initialHeight + 'px';
-        $scope['inputText'] = '';
-      }
+      options['sendMessage'](message).then(
+        function() {
+          if (textBox) {
+            textBox.style.height = initialHeight + 'px';
+          }
+          $scope['inputText'] = '';
+        },
+        function() {}
+      );
     }
   };
 };

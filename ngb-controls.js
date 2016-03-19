@@ -117,6 +117,270 @@ ngb.d.PatientModal.prototype.link = function ($scope, $element, $attrs) {
 
 
 
+goog.provide('ngb.d.HasSidebar');
+
+goog.require('ngu.Directive');
+
+/**
+ * @param {angular.Scope} $scope
+ * @param $rootScope {angular.$rootScope}
+ * @param $q
+ * @constructor
+ * @extends {ngu.Directive}
+ */
+ngb.d.HasSidebar = function ($scope, $rootScope, $q) {
+  ngu.Directive.apply(this, arguments);
+
+  // All this hacking needs to be done in order to prevent background scrolling on iOS,
+  // or scrolling to top when opening the sidebar:
+  var $body = $('body');
+
+  /**
+   * @type {Object.<string, {in:boolean, $container:jQuery, $backdrop:jQuery}>}
+   */
+  var sidebarMap = {};
+
+  /** @type {{scrollTop: number, $doc: jQuery}|null} */
+  var bodyState = null;
+
+  /**
+   * @type {string|null}
+   */
+  var currentSidebar = null;
+
+  var showSidebar = function(e, sidebarClass) {
+    return $q(function(resolve, reject) {
+      if (currentSidebar != null) {
+        if (currentSidebar == sidebarClass) { resolve(); return; }
+
+        hideSidebar(e, currentSidebar).then(function() {
+          showSidebar(e, sidebarClass);
+        });
+        return;
+      }
+
+      sidebarClass = sidebarClass || '';
+      currentSidebar = sidebarClass;
+      var sidebar = sidebarMap[sidebarClass];
+      if (sidebar && sidebar['in']) { resolve(); return; }
+      if (!sidebar) {
+        sidebar = {
+          'in': true,
+          '$container': $('.ngb-sidebar-container' + sidebarClass),
+          '$backdrop': $('.ngb-sidebar-backdrop' + sidebarClass)
+        };
+        sidebarMap[sidebarClass] = sidebar;
+      }
+      sidebar['in'] = true;
+      var $container = sidebar['$container'];
+      var $backdrop = sidebar['$backdrop'];
+
+      var containerAdded = false;
+      var backdropAdded = false;
+
+      $container.one('transitionend', function() {
+        containerAdded = true;
+        if (backdropAdded) { resolve(); }
+      });
+
+      $backdrop.one('transitionend', function() {
+        backdropAdded = true;
+        if (containerAdded) { resolve(); }
+      });
+
+      $container.css('display', 'block');
+      u.reflowForTransition($container[0]);
+
+      $backdrop.css('display', 'block');
+      u.reflowForTransition($backdrop[0]);
+
+      $body.addClass('ngb-sidebar-in' + sidebarClass.replace(/\./g, ' '));
+
+      if (!bodyState) {
+        bodyState = ngu.disableBodyScroll(true);
+      }
+    });
+  };
+
+  var hideSidebar = function(e, sidebarClass) {
+    return $q(function(resolve, reject) {
+      if (sidebarClass == undefined) {
+        sidebarClass = currentSidebar || '';
+      }
+      var sidebar = sidebarMap[sidebarClass];
+      if (!sidebar || !sidebar['in']) { resolve(); return; }
+
+      sidebar['in'] = false;
+      var $container = sidebar['$container'];
+      var $backdrop = sidebar['$backdrop'];
+      currentSidebar = null;
+
+      var containerRemoved = false;
+      var backdropRemoved = false;
+
+      $container.one('transitionend', function() {
+        $container.css('display', '');
+        containerRemoved = true;
+        if (backdropRemoved) { resolve(); }
+      });
+      $backdrop.one('transitionend', function() {
+        $backdrop.css('display', '');
+        backdropRemoved = true;
+        if (containerRemoved) { resolve(); }
+      });
+
+      $body.removeClass('ngb-sidebar-in' + sidebarClass.replace(/\./g, ' '));
+
+      ngu.reEnableBodyScroll(/** @type {{scrollTop: number, $doc: jQuery}} */ (bodyState));
+      bodyState = null;
+    });
+  };
+
+  $rootScope.$on('sidebarOn', showSidebar);
+
+  $rootScope.$on('sidebarOff', hideSidebar);
+
+  $rootScope.$on('sidebarToggle', function(e, sidebarClass) {
+    if (sidebarClass == undefined) {
+      sidebarClass = currentSidebar || '';
+    }
+    var sidebar = sidebarMap[sidebarClass];
+    if (sidebar && sidebar['in']) {
+      hideSidebar(e, sidebarClass);
+    } else {
+      showSidebar(e, sidebarClass);
+    }
+  });
+};
+
+goog.inherits(ngb.d.HasSidebar, ngu.Directive);
+
+/**
+ * @param {angular.Scope} $scope
+ * @param {jQuery} $element
+ * @param {angular.Attributes} $attrs
+ * @override
+ */
+ngb.d.HasSidebar.prototype.link = function ($scope, $element, $attrs) {};
+
+
+goog.provide('ngb.d.MultiselectList');
+
+goog.require('ngu.Directive');
+
+/**
+ * @param {angular.Scope} $scope
+ * @param {angular.$timeout} $timeout
+ * @constructor
+ * @extends {ngu.Directive}
+ */
+ngb.d.MultiselectList = function ($scope, $timeout) {
+  ngu.Directive.apply(this, arguments);
+
+  /**
+   * @type {angular.$timeout}
+   * @private
+   */
+  this._$timeout = $timeout;
+};
+
+goog.inherits(ngb.d.MultiselectList, ngu.Directive);
+
+/**
+ * @param {angular.Scope} $scope
+ * @param {jQuery} $element
+ * @param {angular.Attributes} $attrs
+ * @override
+ */
+ngb.d.MultiselectList.prototype.link = function ($scope, $element, $attrs) {
+  var self = this;
+
+  var moreRemaining = true;
+  var $list = $element.find('> .list-group');
+  var iterate = function() {
+    if ($list.get(0).scrollHeight <= $list.height() && moreRemaining) {
+      moreRemaining = $scope['ngbLoadMore']();
+      self._$timeout(iterate, 0);
+    }
+  };
+  iterate();
+
+  $list.scroll(function() {
+    self._$timeout(function() {
+      if (moreRemaining && $list.get(0).scrollHeight - $list.scrollTop() == $list.height()) {
+        moreRemaining = $scope['ngbLoadMore']();
+      }
+    }, 0);
+  });
+
+  $scope.$watch('ngbFilter', function(value, oldVal) {
+    iterate();
+  });
+};
+
+/**
+ * @param {{label:string, index:number}} item
+ * @returns {boolean}
+ */
+
+ngb.d.MultiselectList.prototype.isSelected = function(item) { return this['$scope']['ngbSelection'][item.index]; };
+
+/**
+ * @param {{label:string, index:number}} item
+ */
+ngb.d.MultiselectList.prototype.select = function(item) {
+  if (item.index in this['$scope']['ngbSelection']) {
+    delete this['$scope']['ngbSelection'][item.index];
+  } else {
+    this['$scope']['ngbSelection'][item.index] = item;
+  }
+};
+
+/**
+ */
+ngb.d.MultiselectList.prototype.clearSelection = function() {
+  this['$scope']['ngbSelection'] = {};
+};
+
+Object.defineProperty(ngb.d.MultiselectList, 'options', {
+  get: function() {
+    var self = this;
+    return {
+      'template':
+        '<div class="nav navbar navbar-default" ng-if="ngbTitle">' +
+          '<div class="navbar-header">' +
+            '<div class="navbar-brand">{{ ngbTitle }}</div>' +
+          '</div>' +
+        '</div>' +
+        '<form class="ngb-list-search" role="search">' +
+          '<div class="input-group">' +
+            '<input type="text" class="form-control" placeholder="Search" ng-model="ngbFilter">' +
+            '<div class="input-group-btn">' +
+              '<button type="button" class="btn btn-default" aria-label="Select all" ng-click="ngbSelectAll()">' +
+                '<span class="fa fa-check-square"></span>' +
+              '</button>' +
+              '<button type="button" class="btn btn-default" aria-label="Clear selection" ng-click="ngbMultiselectList.clearSelection()">' +
+                '<span class="fa fa-square-o"></span>' +
+              '</button>' +
+            '</div>' +
+          '</div>' +
+        '</form>' +
+        '<div class="list-group list" ng-class="{\'ngb-has-title\': !!ngbTitle}">' +
+          '<a ng-repeat="item in ngbItems | filter:ngbFilter" href="" class="list-group-item" ng-class="{\'active\': ngbMultiselectList.isSelected(item)}" ng-click="ngbMultiselectList.select(item)" >{{ item.label }}</a>' +
+        '</div>',
+      'scope': {
+        'ngbTitle': '=',
+        'ngbItems': '=',
+        'ngbFilter': '=',
+        'ngbSelection': '=',
+        'ngbLoadMore': '&',
+        'ngbSelectAll': '&'
+      }
+    };
+  }
+});
+
+
 goog.provide('ngb.s.ModalProvider');
 goog.provide('ngb.s.Modal');
 goog.provide('ngb.s.ModalController');
@@ -388,11 +652,15 @@ ngb.s.ModalController = function($scope, $uibModalInstance, $ngbAnimation, bodyT
     if (options['sendMessage']) {
       var message = $scope['inputText'];
 
-      // Calling sendMessage(message)
-      if (options['sendMessage'](message) && textBox) {
-        textBox.style.height = initialHeight + 'px';
-        $scope['inputText'] = '';
-      }
+      options['sendMessage'](message).then(
+        function() {
+          if (textBox) {
+            textBox.style.height = initialHeight + 'px';
+          }
+          $scope['inputText'] = '';
+        },
+        function() {}
+      );
     }
   };
 };
@@ -496,270 +764,6 @@ ngb.s.ModalController.prototype.toggleInputTextEnabled = function(value) {
 ngb.s.ModalController.prototype.toggleInputButtonEnabled = function(value) {
   this['$scope']['inputButtonEnabled'] = !!value;
 };
-
-
-goog.provide('ngb.d.MultiselectList');
-
-goog.require('ngu.Directive');
-
-/**
- * @param {angular.Scope} $scope
- * @param {angular.$timeout} $timeout
- * @constructor
- * @extends {ngu.Directive}
- */
-ngb.d.MultiselectList = function ($scope, $timeout) {
-  ngu.Directive.apply(this, arguments);
-
-  /**
-   * @type {angular.$timeout}
-   * @private
-   */
-  this._$timeout = $timeout;
-};
-
-goog.inherits(ngb.d.MultiselectList, ngu.Directive);
-
-/**
- * @param {angular.Scope} $scope
- * @param {jQuery} $element
- * @param {angular.Attributes} $attrs
- * @override
- */
-ngb.d.MultiselectList.prototype.link = function ($scope, $element, $attrs) {
-  var self = this;
-
-  var moreRemaining = true;
-  var $list = $element.find('> .list-group');
-  var iterate = function() {
-    if ($list.get(0).scrollHeight <= $list.height() && moreRemaining) {
-      moreRemaining = $scope['ngbLoadMore']();
-      self._$timeout(iterate, 0);
-    }
-  };
-  iterate();
-
-  $list.scroll(function() {
-    self._$timeout(function() {
-      if (moreRemaining && $list.get(0).scrollHeight - $list.scrollTop() == $list.height()) {
-        moreRemaining = $scope['ngbLoadMore']();
-      }
-    }, 0);
-  });
-
-  $scope.$watch('ngbFilter', function(value, oldVal) {
-    iterate();
-  });
-};
-
-/**
- * @param {{label:string, index:number}} item
- * @returns {boolean}
- */
-
-ngb.d.MultiselectList.prototype.isSelected = function(item) { return this['$scope']['ngbSelection'][item.index]; };
-
-/**
- * @param {{label:string, index:number}} item
- */
-ngb.d.MultiselectList.prototype.select = function(item) {
-  if (item.index in this['$scope']['ngbSelection']) {
-    delete this['$scope']['ngbSelection'][item.index];
-  } else {
-    this['$scope']['ngbSelection'][item.index] = item;
-  }
-};
-
-/**
- */
-ngb.d.MultiselectList.prototype.clearSelection = function() {
-  this['$scope']['ngbSelection'] = {};
-};
-
-Object.defineProperty(ngb.d.MultiselectList, 'options', {
-  get: function() {
-    var self = this;
-    return {
-      'template':
-        '<div class="nav navbar navbar-default" ng-if="ngbTitle">' +
-          '<div class="navbar-header">' +
-            '<div class="navbar-brand">{{ ngbTitle }}</div>' +
-          '</div>' +
-        '</div>' +
-        '<form class="ngb-list-search" role="search">' +
-          '<div class="input-group">' +
-            '<input type="text" class="form-control" placeholder="Search" ng-model="ngbFilter">' +
-            '<div class="input-group-btn">' +
-              '<button type="button" class="btn btn-default" aria-label="Select all" ng-click="ngbSelectAll()">' +
-                '<span class="fa fa-check-square"></span>' +
-              '</button>' +
-              '<button type="button" class="btn btn-default" aria-label="Clear selection" ng-click="ngbMultiselectList.clearSelection()">' +
-                '<span class="fa fa-square-o"></span>' +
-              '</button>' +
-            '</div>' +
-          '</div>' +
-        '</form>' +
-        '<div class="list-group list" ng-class="{\'ngb-has-title\': !!ngbTitle}">' +
-          '<a ng-repeat="item in ngbItems | filter:ngbFilter" href="" class="list-group-item" ng-class="{\'active\': ngbMultiselectList.isSelected(item)}" ng-click="ngbMultiselectList.select(item)" >{{ item.label }}</a>' +
-        '</div>',
-      'scope': {
-        'ngbTitle': '=',
-        'ngbItems': '=',
-        'ngbFilter': '=',
-        'ngbSelection': '=',
-        'ngbLoadMore': '&',
-        'ngbSelectAll': '&'
-      }
-    };
-  }
-});
-
-
-goog.provide('ngb.d.HasSidebar');
-
-goog.require('ngu.Directive');
-
-/**
- * @param {angular.Scope} $scope
- * @param $rootScope {angular.$rootScope}
- * @param $q
- * @constructor
- * @extends {ngu.Directive}
- */
-ngb.d.HasSidebar = function ($scope, $rootScope, $q) {
-  ngu.Directive.apply(this, arguments);
-
-  // All this hacking needs to be done in order to prevent background scrolling on iOS,
-  // or scrolling to top when opening the sidebar:
-  var $body = $('body');
-
-  /**
-   * @type {Object.<string, {in:boolean, $container:jQuery, $backdrop:jQuery}>}
-   */
-  var sidebarMap = {};
-
-  /** @type {{scrollTop: number, $doc: jQuery}|null} */
-  var bodyState = null;
-
-  /**
-   * @type {string|null}
-   */
-  var currentSidebar = null;
-
-  var showSidebar = function(e, sidebarClass) {
-    return $q(function(resolve, reject) {
-      if (currentSidebar != null) {
-        if (currentSidebar == sidebarClass) { resolve(); return; }
-
-        hideSidebar(e, currentSidebar).then(function() {
-          showSidebar(e, sidebarClass);
-        });
-        return;
-      }
-
-      sidebarClass = sidebarClass || '';
-      currentSidebar = sidebarClass;
-      var sidebar = sidebarMap[sidebarClass];
-      if (sidebar && sidebar['in']) { resolve(); return; }
-      if (!sidebar) {
-        sidebar = {
-          'in': true,
-          '$container': $('.ngb-sidebar-container' + sidebarClass),
-          '$backdrop': $('.ngb-sidebar-backdrop' + sidebarClass)
-        };
-        sidebarMap[sidebarClass] = sidebar;
-      }
-      sidebar['in'] = true;
-      var $container = sidebar['$container'];
-      var $backdrop = sidebar['$backdrop'];
-
-      var containerAdded = false;
-      var backdropAdded = false;
-
-      $container.one('transitionend', function() {
-        containerAdded = true;
-        if (backdropAdded) { resolve(); }
-      });
-
-      $backdrop.one('transitionend', function() {
-        backdropAdded = true;
-        if (containerAdded) { resolve(); }
-      });
-
-      $container.css('display', 'block');
-      u.reflowForTransition($container[0]);
-
-      $backdrop.css('display', 'block');
-      u.reflowForTransition($backdrop[0]);
-
-      $body.addClass('ngb-sidebar-in' + sidebarClass.replace(/\./g, ' '));
-
-      if (!bodyState) {
-        bodyState = ngu.disableBodyScroll(true);
-      }
-    });
-  };
-
-  var hideSidebar = function(e, sidebarClass) {
-    return $q(function(resolve, reject) {
-      if (sidebarClass == undefined) {
-        sidebarClass = currentSidebar || '';
-      }
-      var sidebar = sidebarMap[sidebarClass];
-      if (!sidebar || !sidebar['in']) { resolve(); return; }
-
-      sidebar['in'] = false;
-      var $container = sidebar['$container'];
-      var $backdrop = sidebar['$backdrop'];
-      currentSidebar = null;
-
-      var containerRemoved = false;
-      var backdropRemoved = false;
-
-      $container.one('transitionend', function() {
-        $container.css('display', '');
-        containerRemoved = true;
-        if (backdropRemoved) { resolve(); }
-      });
-      $backdrop.one('transitionend', function() {
-        $backdrop.css('display', '');
-        backdropRemoved = true;
-        if (containerRemoved) { resolve(); }
-      });
-
-      $body.removeClass('ngb-sidebar-in' + sidebarClass.replace(/\./g, ' '));
-
-      ngu.reEnableBodyScroll(/** @type {{scrollTop: number, $doc: jQuery}} */ (bodyState));
-      bodyState = null;
-    });
-  };
-
-  $rootScope.$on('sidebarOn', showSidebar);
-
-  $rootScope.$on('sidebarOff', hideSidebar);
-
-  $rootScope.$on('sidebarToggle', function(e, sidebarClass) {
-    if (sidebarClass == undefined) {
-      sidebarClass = currentSidebar || '';
-    }
-    var sidebar = sidebarMap[sidebarClass];
-    if (sidebar && sidebar['in']) {
-      hideSidebar(e, sidebarClass);
-    } else {
-      showSidebar(e, sidebarClass);
-    }
-  });
-};
-
-goog.inherits(ngb.d.HasSidebar, ngu.Directive);
-
-/**
- * @param {angular.Scope} $scope
- * @param {jQuery} $element
- * @param {angular.Attributes} $attrs
- * @override
- */
-ngb.d.HasSidebar.prototype.link = function ($scope, $element, $attrs) {};
 
 
 goog.provide('ngb');

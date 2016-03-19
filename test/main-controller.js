@@ -238,7 +238,7 @@ ngb.test.MainController.prototype.showModal = function() {
     'loaderClass': 'timer-loader',
     'fixed': false,
     'useFooterInputText': true,
-    'sendMessage': function(message) { alert(message); return true; },
+    // 'sendMessage': function(message) { alert(message); return true; },
     'controller': 'ngb.test.MyModalController'
   });
   modalInstance.result.then(function (selectedItem) {
@@ -255,7 +255,7 @@ ngb.test.MainController.prototype.showModal = function() {
  * @constructor
  * @extends {ngb.s.ModalController}
  */
-ngb.test.MyModalController = function() {
+ngb.test.MyModalController = function($scope, $uibModalInstance, $ngbAnimation, bodyTemplateUrl, options, $q) {
   ngb.s.ModalController.apply(this, arguments);
 
   /*this.$scope.adjustHeight = function($event) {
@@ -270,6 +270,19 @@ ngb.test.MyModalController = function() {
   this['$scope'].$watch('inputText', function(newVal, oldVal) {
     self.toggleInputButtonEnabled(!!(newVal.trim()));
   });
+
+  options['sendMessage'] = function(message) {
+    return $q(function(resolve, reject) {
+      self.toggleInputButtonEnabled(false);
+      self.toggleInputTextEnabled(false);
+      setTimeout(function() {
+        alert(message);
+        self.toggleInputButtonEnabled(true);
+        self.toggleInputTextEnabled(true);
+        resolve();
+      }, 1000);
+    });
+  }
 };
 
 goog.inherits(ngb.test.MyModalController, ngb.s.ModalController);
