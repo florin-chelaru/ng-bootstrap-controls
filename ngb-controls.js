@@ -18,105 +18,6 @@
 */
 
 
-goog.provide('ngb.d.PatientModal');
-
-goog.require('ngu.Directive');
-
-/**
- * @param {angular.Scope} $scope
- * @param {angular.$compile} $compile
- * @constructor
- * @extends {ngu.Directive}
- */
-ngb.d.PatientModal = function ($scope, $compile) {
-  ngu.Directive.apply(this, arguments);
-
-  /**
-   * @type {angular.$compile}
-   * @private
-   */
-  this._$compile = $compile;
-};
-
-goog.inherits(ngb.d.PatientModal, ngu.Directive);
-
-ngb.d.PatientModal['options'] = {
-  'template':
-    '<div class="ngb-modal-overlay">' +
-      '<div class="ngb-loader" ng-class="loaderClass || \'\'"></div>' +
-    '</div>' +
-    '<div class="modal-header" ng-include="headerTemplateUrl" onload="headerLoaded()">' +
-    '</div>' +
-    '<div class="modal-body">' +
-    '</div>' +
-    '<div class="modal-footer" ng-include="footerTemplateUrl" onload="footerLoaded()">' +
-    '</div>'
-};
-
-/**
- * @param {angular.Scope} $scope
- * @param {jQuery} $element
- * @param {angular.Attributes} $attrs
- * @override
- */
-ngb.d.PatientModal.prototype.link = function ($scope, $element, $attrs) {
-  var $body = $('body');
-  var $modalContent = $element.parent();
-
-  $body.removeClass('ngb-modal-open');
-
-  var $compile = this._$compile;
-
-  $scope.$on('modal.closing', function() {
-    $body.removeClass('ngb-modal-open-blur');
-  });
-
-  $scope['bodyLoaded'] = function() {
-    var $overlay = $element.find('.ngb-modal-overlay');
-    $overlay.one('transitionend', function() {
-      $overlay.css('display', 'none');
-    });
-    $overlay.css('opacity', '0');
-    $body.addClass('ngb-modal-open');
-  };
-
-  if ($scope['fixed']) {
-    $scope['headerLoaded'] = function () {
-      var $modalHeader = $element.find('.modal-header');
-      $scope.$watch(function () {
-          return $modalHeader.outerHeight();
-        },
-        function (value, oldValue) {
-          $modalContent.css('padding-top', value);
-        });
-    };
-
-    $scope['footerLoaded'] = function () {
-      var $modalFooter = $element.find('.modal-footer');
-      $scope.$watch(function () {
-          return $modalFooter.outerHeight();
-        },
-        function (value, oldValue) {
-          $modalContent.css('padding-bottom', value);
-        });
-    };
-  }
-
-  $scope['$ngbAnimation'].promise.then(function() {
-    $body.addClass('ngb-modal-open-blur');
-
-    var ngContent = angular.element('<div ng-include="bodyTemplateUrl" onload="bodyLoaded()"></div>');
-    /** @type {!angular.JQLite|jQuery} */
-    var $content = ($compile(ngContent)(/** @type {!angular.Scope} */($scope)));
-
-    var $modalBody = $element.find('.modal-body');
-    $modalBody.append(/** @type {jQuery} */($content));
-  });
-};
-
-
-
-
 goog.provide('ngb.d.HasSidebar');
 
 goog.require('ngu.Directive');
@@ -264,27 +165,40 @@ goog.inherits(ngb.d.HasSidebar, ngu.Directive);
 ngb.d.HasSidebar.prototype.link = function ($scope, $element, $attrs) {};
 
 
-goog.provide('ngb.d.MultiselectList');
+goog.provide('ngb.d.PatientModal');
 
 goog.require('ngu.Directive');
 
 /**
  * @param {angular.Scope} $scope
- * @param {angular.$timeout} $timeout
+ * @param {angular.$compile} $compile
  * @constructor
  * @extends {ngu.Directive}
  */
-ngb.d.MultiselectList = function ($scope, $timeout) {
+ngb.d.PatientModal = function ($scope, $compile) {
   ngu.Directive.apply(this, arguments);
 
   /**
-   * @type {angular.$timeout}
+   * @type {angular.$compile}
    * @private
    */
-  this._$timeout = $timeout;
+  this._$compile = $compile;
 };
 
-goog.inherits(ngb.d.MultiselectList, ngu.Directive);
+goog.inherits(ngb.d.PatientModal, ngu.Directive);
+
+ngb.d.PatientModal['options'] = {
+  'template':
+    '<div class="ngb-modal-overlay">' +
+      '<div class="ngb-loader" ng-class="loaderClass || \'\'"></div>' +
+    '</div>' +
+    '<div class="modal-header" ng-include="headerTemplateUrl" onload="headerLoaded()">' +
+    '</div>' +
+    '<div class="modal-body">' +
+    '</div>' +
+    '<div class="modal-footer" ng-include="footerTemplateUrl" onload="footerLoaded()">' +
+    '</div>'
+};
 
 /**
  * @param {angular.Scope} $scope
@@ -292,93 +206,62 @@ goog.inherits(ngb.d.MultiselectList, ngu.Directive);
  * @param {angular.Attributes} $attrs
  * @override
  */
-ngb.d.MultiselectList.prototype.link = function ($scope, $element, $attrs) {
-  var self = this;
+ngb.d.PatientModal.prototype.link = function ($scope, $element, $attrs) {
+  var $body = $('body');
+  var $modalContent = $element.parent();
 
-  var moreRemaining = true;
-  var $list = $element.find('> .list-group');
-  var iterate = function() {
-    if ($list.get(0).scrollHeight <= $list.height() && moreRemaining) {
-      moreRemaining = $scope['ngbLoadMore']();
-      self._$timeout(iterate, 0);
-    }
+  $body.removeClass('ngb-modal-open');
+
+  var $compile = this._$compile;
+
+  $scope.$on('modal.closing', function() {
+    $body.removeClass('ngb-modal-open-blur');
+  });
+
+  $scope['bodyLoaded'] = function() {
+    var $overlay = $element.find('.ngb-modal-overlay');
+    $overlay.one('transitionend', function() {
+      $overlay.css('display', 'none');
+    });
+    $overlay.css('opacity', '0');
+    $body.addClass('ngb-modal-open');
   };
-  iterate();
 
-  $list.scroll(function() {
-    self._$timeout(function() {
-      if (moreRemaining && $list.get(0).scrollHeight - $list.scrollTop() == $list.height()) {
-        moreRemaining = $scope['ngbLoadMore']();
-      }
-    }, 0);
-  });
+  if ($scope['fixed']) {
+    $scope['headerLoaded'] = function () {
+      var $modalHeader = $element.find('.modal-header');
+      $scope.$watch(function () {
+          return $modalHeader.outerHeight();
+        },
+        function (value, oldValue) {
+          $modalContent.css('padding-top', value);
+        });
+    };
 
-  $scope.$watch('ngbFilter', function(value, oldVal) {
-    iterate();
-  });
-};
-
-/**
- * @param {{label:string, index:number}} item
- * @returns {boolean}
- */
-
-ngb.d.MultiselectList.prototype.isSelected = function(item) { return this['$scope']['ngbSelection'][item.index]; };
-
-/**
- * @param {{label:string, index:number}} item
- */
-ngb.d.MultiselectList.prototype.select = function(item) {
-  if (item.index in this['$scope']['ngbSelection']) {
-    delete this['$scope']['ngbSelection'][item.index];
-  } else {
-    this['$scope']['ngbSelection'][item.index] = item;
-  }
-};
-
-/**
- */
-ngb.d.MultiselectList.prototype.clearSelection = function() {
-  this['$scope']['ngbSelection'] = {};
-};
-
-Object.defineProperty(ngb.d.MultiselectList, 'options', {
-  get: function() {
-    var self = this;
-    return {
-      'template':
-        '<div class="nav navbar navbar-default" ng-if="ngbTitle">' +
-          '<div class="navbar-header">' +
-            '<div class="navbar-brand">{{ ngbTitle }}</div>' +
-          '</div>' +
-        '</div>' +
-        '<form class="ngb-list-search" role="search">' +
-          '<div class="input-group">' +
-            '<input type="text" class="form-control" placeholder="Search" ng-model="ngbFilter">' +
-            '<div class="input-group-btn">' +
-              '<button type="button" class="btn btn-default" aria-label="Select all" ng-click="ngbSelectAll()">' +
-                '<span class="fa fa-check-square"></span>' +
-              '</button>' +
-              '<button type="button" class="btn btn-default" aria-label="Clear selection" ng-click="ngbMultiselectList.clearSelection()">' +
-                '<span class="fa fa-square-o"></span>' +
-              '</button>' +
-            '</div>' +
-          '</div>' +
-        '</form>' +
-        '<div class="list-group list" ng-class="{\'ngb-has-title\': !!ngbTitle}">' +
-          '<a ng-repeat="item in ngbItems | filter:ngbFilter" href="" class="list-group-item" ng-class="{\'active\': ngbMultiselectList.isSelected(item)}" ng-click="ngbMultiselectList.select(item)" >{{ item.label }}</a>' +
-        '</div>',
-      'scope': {
-        'ngbTitle': '=',
-        'ngbItems': '=',
-        'ngbFilter': '=',
-        'ngbSelection': '=',
-        'ngbLoadMore': '&',
-        'ngbSelectAll': '&'
-      }
+    $scope['footerLoaded'] = function () {
+      var $modalFooter = $element.find('.modal-footer');
+      $scope.$watch(function () {
+          return $modalFooter.outerHeight();
+        },
+        function (value, oldValue) {
+          $modalContent.css('padding-bottom', value);
+        });
     };
   }
-});
+
+  $scope['$ngbAnimation'].promise.then(function() {
+    $body.addClass('ngb-modal-open-blur');
+
+    var ngContent = angular.element('<div ng-include="bodyTemplateUrl" onload="bodyLoaded()"></div>');
+    /** @type {!angular.JQLite|jQuery} */
+    var $content = ($compile(ngContent)(/** @type {!angular.Scope} */($scope)));
+
+    var $modalBody = $element.find('.modal-body');
+    $modalBody.append(/** @type {jQuery} */($content));
+  });
+};
+
+
 
 
 goog.provide('ngb.s.ModalProvider');
@@ -488,7 +371,7 @@ ngb.s.Modal = function(provider, $uibModal, $q, $templateCache) {
 goog.inherits(ngb.s.Modal, ngu.ProviderService);
 
 /**
- * @param {{animation: (boolean|undefined), appendTo: (jQuery|undefined), backdrop: (boolean|string|undefined),
+ * @param {*|{animation: (boolean|undefined), appendTo: (jQuery|undefined), backdrop: (boolean|string|undefined),
  *   backdropClass: (string|undefined), bindToController: (boolean|undefined),
  *   controller: (Function|string|Array|undefined), controllerAs: (string|undefined), keyboard: (boolean|undefined),
  *   openedClass: (string|undefined), resolve: (Object|undefined), $scope: (angular.Scope|undefined), size: (string|undefined),
@@ -766,6 +649,171 @@ ngb.s.ModalController.prototype.toggleInputButtonEnabled = function(value) {
 };
 
 
+goog.provide('ngb.d.MultiselectList');
+
+goog.require('ngu.Directive');
+
+/**
+ * @param {angular.Scope} $scope
+ * @param {angular.$timeout} $timeout
+ * @constructor
+ * @extends {ngu.Directive}
+ */
+ngb.d.MultiselectList = function ($scope, $timeout) {
+  ngu.Directive.apply(this, arguments);
+
+  /**
+   * @type {angular.$timeout}
+   * @private
+   */
+  this._$timeout = $timeout;
+};
+
+goog.inherits(ngb.d.MultiselectList, ngu.Directive);
+
+/**
+ * @param {angular.Scope} $scope
+ * @param {jQuery} $element
+ * @param {angular.Attributes} $attrs
+ * @override
+ */
+ngb.d.MultiselectList.prototype.link = function ($scope, $element, $attrs) {
+  var self = this;
+
+  var moreRemaining = true;
+  var $list = $element.find('> .list-group');
+  var iterate = function() {
+    if ($list.get(0).scrollHeight <= $list.height() && moreRemaining) {
+      moreRemaining = $scope['ngbLoadMore']();
+      self._$timeout(iterate, 0);
+    }
+  };
+  iterate();
+
+  $list.scroll(function() {
+    self._$timeout(function() {
+      if (moreRemaining && $list.get(0).scrollHeight - $list.scrollTop() == $list.height()) {
+        moreRemaining = $scope['ngbLoadMore']();
+      }
+    }, 0);
+  });
+
+  $scope.$watch('ngbFilter', function(value, oldVal) {
+    iterate();
+  });
+};
+
+/**
+ * @param {{label:string, index:number}} item
+ * @returns {boolean}
+ */
+
+ngb.d.MultiselectList.prototype.isSelected = function(item) { return this['$scope']['ngbSelection'][item.index]; };
+
+/**
+ * @param {{label:string, index:number}} item
+ */
+ngb.d.MultiselectList.prototype.select = function(item) {
+  if (item.index in this['$scope']['ngbSelection']) {
+    delete this['$scope']['ngbSelection'][item.index];
+  } else {
+    this['$scope']['ngbSelection'][item.index] = item;
+  }
+};
+
+/**
+ */
+ngb.d.MultiselectList.prototype.clearSelection = function() {
+  this['$scope']['ngbSelection'] = {};
+};
+
+Object.defineProperty(ngb.d.MultiselectList, 'options', {
+  get: function() {
+    var self = this;
+    return {
+      'template':
+        '<div class="nav navbar navbar-default" ng-if="ngbTitle">' +
+          '<div class="navbar-header">' +
+            '<div class="navbar-brand">{{ ngbTitle }}</div>' +
+          '</div>' +
+        '</div>' +
+        '<form class="ngb-list-search" role="search">' +
+          '<div class="input-group">' +
+            '<input type="text" class="form-control" placeholder="Search" ng-model="ngbFilter">' +
+            '<div class="input-group-btn">' +
+              '<button type="button" class="btn btn-default" aria-label="Select all" ng-click="ngbSelectAll()">' +
+                '<span class="fa fa-check-square"></span>' +
+              '</button>' +
+              '<button type="button" class="btn btn-default" aria-label="Clear selection" ng-click="ngbMultiselectList.clearSelection()">' +
+                '<span class="fa fa-square-o"></span>' +
+              '</button>' +
+            '</div>' +
+          '</div>' +
+        '</form>' +
+        '<div class="list-group list" ng-class="{\'ngb-has-title\': !!ngbTitle}">' +
+          '<a ng-repeat="item in ngbItems | filter:ngbFilter" href="" class="list-group-item" ng-class="{\'active\': ngbMultiselectList.isSelected(item)}" ng-click="ngbMultiselectList.select(item)" >{{ item.label }}</a>' +
+        '</div>',
+      'scope': {
+        'ngbTitle': '=',
+        'ngbItems': '=',
+        'ngbFilter': '=',
+        'ngbSelection': '=',
+        'ngbLoadMore': '&',
+        'ngbSelectAll': '&'
+      }
+    };
+  }
+});
+
+
+goog.provide('ngb.d.GoogleMapsSearchbox');
+
+goog.require('ngu.Directive');
+
+/**
+ * @param {angular.Scope} $scope
+ * @param {angular.$timeout} $timeout
+ * @constructor
+ * @extends {ngu.Directive}
+ */
+ngb.d.GoogleMapsSearchbox = function ($scope, $timeout) {
+  ngu.Directive.apply(this, arguments);
+
+  /**
+   * @type {angular.$timeout}
+   * @private
+   */
+  this._$timeout = $timeout;
+};
+
+goog.inherits(ngb.d.GoogleMapsSearchbox, ngu.Directive);
+
+/**
+ * @param {angular.Scope} $scope
+ * @param {jQuery} $element
+ * @param {angular.Attributes} $attrs
+ * @override
+ */
+ngb.d.GoogleMapsSearchbox.prototype.link = function ($scope, $element, $attrs) {
+  var self = this;
+  var input = $element[0];
+  var searchBox = new google.maps.places.SearchBox(input);
+
+  searchBox.addListener('places_changed', function() {
+    $element.triggerHandler('input');
+    if ($scope['ngbPlacesChanged']) {
+      $scope['ngbPlacesChanged']({'searchBox': searchBox});
+    }
+  });
+};
+
+ngb.d.GoogleMapsSearchbox['options'] = {
+  'scope': {
+    'ngbPlacesChanged': '&'
+  }
+};
+
+
 goog.provide('ngb');
 
 goog.require('ngu');
@@ -775,6 +823,7 @@ goog.require('ngb.d.MultiselectList');
 goog.require('ngb.d.PatientModal');
 goog.require('ngb.s.Modal');
 goog.require('ngb.d.HasSidebar');
+goog.require('ngb.d.GoogleMapsSearchbox');
 
 ngb.main = angular.module('ngb', ['ngu', 'ui.bootstrap', 'ngAnimate']);
 
@@ -788,6 +837,10 @@ ngb.main.directive('ngbPatientModal', ['$compile', function() {
 
 ngb.main.directive('ngbHasSidebar', ['$rootScope', '$q', function() {
   return ngu.Directive.createNew('ngbHasSidebar', /** @type {function(new: ngu.Directive)} */ (ngb.d.HasSidebar), arguments);
+}]);
+
+ngb.main.directive('ngbGoogleMapsSearchbox', ['$timeout', function() {
+  return ngu.Directive.createNew('ngbGoogleMapsSearchbox', /** @type {function(new: ngu.Directive)} */ (ngb.d.GoogleMapsSearchbox), arguments, {restrict: 'A'});
 }]);
 
 

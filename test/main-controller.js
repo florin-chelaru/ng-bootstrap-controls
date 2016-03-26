@@ -251,6 +251,10 @@ ngb.test.MainController.prototype.showModal = function() {
 
 };
 
+ngb.test.MainController.prototype.showPlaces = function(searchBox) {
+  console.log(searchBox.getPlaces()[0]['formatted_address']);
+};
+
 /**
  * @constructor
  * @extends {ngb.s.ModalController}

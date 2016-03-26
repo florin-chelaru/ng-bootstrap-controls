@@ -13,6 +13,7 @@ goog.require('ngb.d.MultiselectList');
 goog.require('ngb.d.PatientModal');
 goog.require('ngb.s.Modal');
 goog.require('ngb.d.HasSidebar');
+goog.require('ngb.d.GoogleMapsSearchbox');
 
 ngb.main = angular.module('ngb', ['ngu', 'ui.bootstrap', 'ngAnimate']);
 
@@ -26,6 +27,10 @@ ngb.main.directive('ngbPatientModal', ['$compile', function() {
 
 ngb.main.directive('ngbHasSidebar', ['$rootScope', '$q', function() {
   return ngu.Directive.createNew('ngbHasSidebar', /** @type {function(new: ngu.Directive)} */ (ngb.d.HasSidebar), arguments);
+}]);
+
+ngb.main.directive('ngbGoogleMapsSearchbox', ['$timeout', function() {
+  return ngu.Directive.createNew('ngbGoogleMapsSearchbox', /** @type {function(new: ngu.Directive)} */ (ngb.d.GoogleMapsSearchbox), arguments, {restrict: 'A'});
 }]);
 
 

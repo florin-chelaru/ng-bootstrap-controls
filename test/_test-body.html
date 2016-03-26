@@ -2,6 +2,8 @@
 <button class="btn btn-default" ng-click="$emit('sidebarToggle', '.custom-left-sidebar')">Sidebar Left</button>
 <button class="btn btn-default" ng-click="$emit('sidebarToggle', '.custom-right-sidebar')">Sidebar Right</button>
 <div ng-controller="ngb.test.MainController as main">
+  <input ngb-google-maps-searchbox ngb-places-changed="main.showPlaces(searchBox)" type="text" ng-model="main.address" />
+  <div>{{ main.address }}</div>
   <button class="btn btn-default" ng-click="main.showModal()">Modal</button>
   <div class="ngb-main-controller">
     <div class="ngb-multiselect-list"
